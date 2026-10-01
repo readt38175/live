@@ -105,6 +105,11 @@
     .overlay-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
     .overlay-row input[type=range] { flex: 1; accent-color: var(--primary); }
     .foot { text-align: center; margin-top: 22px; font-size: 12.5px; color: var(--muted); }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; }
+    .f-item { display: flex; flex-direction: column; gap: 5px; }
+    .f-label { font-size: 12.5px; color: var(--muted); font-weight: 600; }
+    .f-wide { grid-column: 1 / -1; }
+    @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
@@ -114,7 +119,7 @@
   <div class="steps">
     <b>操作步骤：</b><br>
     1. 填入你的个人密钥<br>
-    2. 选择导入方式（Excel表格 或 粘贴JSON，二选一）<br>
+    2. 选择导入方式（Excel表格 或 手动填写，二选一）<br>
     3. 数据会自动转换成预览<br>
     4. 确认内容无误，点击提交同步线上歌单与更新日期
   </div>
@@ -129,7 +134,7 @@
 
     <div class="tabs">
       <button class="tab active" id="tabExcel" type="button">Excel上传</button>
-      <button class="tab" id="tabJson" type="button">粘贴JSON</button>
+      <button class="tab" id="tabJson" type="button">手动填写</button>
     </div>
 
     <!-- Excel 上传 -->
@@ -139,13 +144,42 @@
       <p class="hint" id="excelHint">支持 .xlsx 文件，表头需包含：歌名、歌手（可选列：类型 / 语言 / 是否付费 / 付费礼物 / 备注 / 歌名(中文)）。</p>
     </div>
 
-    <!-- 粘贴 JSON -->
+    <!-- 手动填写（表单自动生成 JSON） -->
     <div id="paneJson" hidden>
-      <label class="lbl">粘贴 JSON 歌单数据（歌曲对象数组）</label>
-      <textarea id="jsonInput" placeholder='格式示例：[{"title":"歌名","artist":"歌手","type":"JPOP","language":"日文","paid":"否","gift":"","note":"备注"}]&#10;也支持直接粘贴从 Excel 复制的表格文本（Tab 分隔，首行表头）'></textarea>
-      <div style="margin-top:12px">
-        <button class="btn btn-accent" id="parseJsonBtn" type="button">导入JSON</button>
+      <label class="lbl">手动填写歌曲信息</label>
+      <div class="form-grid">
+        <div class="f-item"><span class="f-label">歌名 *</span><input type="text" id="fTitle" placeholder="必填"></div>
+        <div class="f-item"><span class="f-label">歌手 *</span><input type="text" id="fArtist" placeholder="必填"></div>
+        <div class="f-item"><span class="f-label">歌名（中文）</span><input type="text" id="fTitleZh"></div>
+        <div class="f-item"><span class="f-label">类型</span>
+          <input type="text" id="fType" list="typeList" placeholder="点击选择或输入">
+          <datalist id="typeList">
+            <option>JPOP</option><option>中文</option>
+            <option>动画/游戏插曲</option><option>VOCALOID/ボカロ</option>
+          </datalist>
+        </div>
+        <div class="f-item"><span class="f-label">语言</span>
+          <select id="fLang"><option value="日文">日文</option><option value="中文">中文</option></select>
+        </div>
+        <div class="f-item"><span class="f-label">是否付费</span>
+          <select id="fPaid"><option value="否">否</option><option value="是">是</option></select>
+        </div>
+        <div class="f-item f-wide"><span class="f-label">付费礼物</span><input type="text" id="fGift" placeholder="如：舰长 / 提督（不填留空）"></div>
+        <div class="f-item f-wide"><span class="f-label">备注</span><input type="text" id="fNote" placeholder="出处、说明等（可留空）"></div>
       </div>
+      <div style="display:flex;gap:10px;margin-top:14px">
+        <button class="btn btn-ghost" id="addSongBtn" type="button">＋ 加入列表</button>
+        <button class="btn btn-accent" id="formImportBtn" type="button">生成JSON并导入</button>
+      </div>
+      <p class="hint" id="formHint">填一首点「加入列表」可连续添加多首（歌手等信息保留），最后点「生成JSON并导入」进入下方预览。</p>
+
+      <details style="margin-top:12px">
+        <summary style="padding:10px 0;font-size:13px">高级：粘贴 JSON / Excel 表格文本</summary>
+        <textarea id="jsonInput" placeholder='格式示例：[{"title":"歌名","artist":"歌手","type":"JPOP","language":"日文","paid":"否","gift":"","note":"备注"}]&#10;也支持直接粘贴从 Excel 复制的表格文本（Tab 分隔，首行表头）'></textarea>
+        <div style="margin-top:12px">
+          <button class="btn btn-accent" id="parseJsonBtn" type="button">导入JSON</button>
+        </div>
+      </details>
     </div>
 
     <!-- 导入模式 -->
@@ -166,7 +200,8 @@
     <div class="inner">
       <div class="field">
         <label class="lbl">仓库名</label>
-        <input type="text" id="ghRepo" placeholder="用户名/仓库名，如 fufu/songlist">
+        <input type="text" id="ghRepo" placeholder="用户名/仓库名，如 fufu/songlist（直接粘贴仓库网址也行）">
+        <p class="hint">支持两种写法：<code>readt38175/live</code> 或完整网址 <code>https://github.com/readt38175/live</code>，会自动识别。</p>
       </div>
       <div class="field">
         <label class="lbl">个人访问令牌（Token）</label>
@@ -336,7 +371,24 @@ function parseTableText(raw) {
 }
 
 function parseJsonText(raw) {
-  const data = JSON.parse(raw.trim());
+  let text = raw.trim();
+  // 去掉可能误粘贴的 markdown 代码块标记
+  text = text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "");
+  // 常见中文标点自动纠错：，；：" （在 JSON 结构里不会出现在无引号位置，直接全量替换安全）
+  const fixed = text
+    .replace(/，/g, ",")   // 中文逗号
+    .replace(/：/g, ":")   // 中文冒号
+    .replace(/；/g, ";");
+  let data;
+  try {
+    data = JSON.parse(fixed);
+  } catch (e) {
+    // 纠错后仍失败则报出更友好的提示
+    const m = e.message.match(/position (\d+)/);
+    const pos = m ? Number(m[1]) : -1;
+    const near = pos > -1 ? `（出错位置附近的内容：…${fixed.slice(Math.max(0, pos - 25), pos + 15)}…）` : "";
+    throw new Error("JSON 格式有误：" + e.message.replace(/in JSON at position \d+ \(line \d+ column \d+\)/, "").trim() + near);
+  }
   const arr = Array.isArray(data) ? data : [data];
   return arr.map(normalize);
 }
@@ -443,6 +495,58 @@ excelFile.addEventListener("change", async () => {
   excelFile.value = "";
 });
 
+/* ================= 手动填写表单（自动生成 JSON） ================= */
+const fFields = ["fTitle", "fArtist", "fTitleZh", "fType", "fGift", "fNote"];
+const fType = $("fType"), fLang = $("fLang");
+let formQueue = [];   // 「加入列表」累积的歌曲
+
+// 类型联动语言：中文→中文，其余默认日文
+fType.addEventListener("input", () => {
+  const t = fType.value.trim();
+  if (t === "中文") fLang.value = "中文";
+  else if (/^(JPOP|动画|VOCALOID|昭和)/.test(t)) fLang.value = "日文";
+});
+
+function formCurrentSong() {
+  return normalize({
+    title: $("fTitle").value,
+    titleZh: $("fTitleZh").value,
+    artist: $("fArtist").value,
+    type: fType.value,
+    language: fLang.value,
+    paid: $("fPaid").value,
+    gift: $("fGift").value,
+    note: $("fNote").value,
+    link: ""
+  });
+}
+function formHint(msg, isErr) {
+  const el = $("formHint");
+  el.textContent = msg;
+  el.style.color = isErr ? "#ff8f8f" : "";
+}
+$("addSongBtn").addEventListener("click", () => {
+  const s = formCurrentSong();
+  if (!s.title || !s.artist) { formHint("❌ 歌名和歌手为必填项，请先填写", true); return; }
+  formQueue.push(s);
+  $("fTitle").value = ""; $("fTitleZh").value = ""; $("fNote").value = ""; $("fGift").value = "";
+  formHint(`已加入列表（当前累计 ${formQueue.length} 首）。继续填写下一首，或点「生成JSON并导入」。`);
+  $("fTitle").focus();
+});
+$("formImportBtn").addEventListener("click", async () => {
+  const songs = formQueue.slice();
+  const cur = formCurrentSong();
+  if (cur.title && cur.artist) songs.push(cur);   // 表单里还填着一首没加列表的，一并导入
+  if (!songs.length) { formHint("❌ 请先填写歌名和歌手（或点「加入列表」累积多首）", true); return; }
+  try {
+    await acceptSongs(songs, "手动填写");
+    formQueue = [];
+    formHint(`✅ 已生成 JSON 并导入 ${songs.length} 首，请查看下方预览。`);
+  } catch (e) {
+    formHint("❌ " + e.message, true);
+  }
+});
+
 /* ================= JSON / 表格粘贴 ================= */
 parseJsonBtn.addEventListener("click", async () => {
   const raw = $("jsonInput").value;
@@ -523,8 +627,20 @@ function syncSiteFromUI() {
 }
 
 /* ================= GitHub 推送 ================= */
+/* 仓库名自动纠错：兼容粘贴完整网址、带 .git 后缀等情况 */
+function normalizeRepo(v) {
+  v = v.trim().replace(/\.git$/i, "");
+  const m = v.match(/github\.com[/:]([^/\s]+)\/([^/\s?#]+)/i);
+  return m ? `${m[1]}/${m[2]}` : v;
+}
+
 async function ghApi(url, opts) {
-  const res = await fetch(url, opts);
+  let res;
+  try {
+    res = await fetch(url, opts);
+  } catch (e) {
+    throw new Error("网络请求失败（Failed to fetch）：请检查网络/代理是否可用、浏览器插件是否拦截了 github.com 请求，或稍后重试");
+  }
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
     throw new Error(`GitHub API ${res.status}: ${body.message || res.statusText}`);
@@ -555,7 +671,7 @@ async function pushFile(repo, token, branch, path, content) {
 
 pushBtn.addEventListener("click", async () => {
   if (!checkKey()) { pushMsg.className = "msg err"; pushMsg.textContent = "请先填写正确的个人密钥"; return; }
-  const repo = $("ghRepo").value.trim();
+  const repo = normalizeRepo($("ghRepo").value);
   const token = $("ghToken").value.trim();
   const branch = $("ghBranch").value.trim() || "main";
   if (!repo || !token) { pushMsg.className = "msg err"; pushMsg.textContent = "请展开「GitHub 推送设置」填写仓库名和 Token"; return; }
