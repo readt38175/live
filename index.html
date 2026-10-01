@@ -22,15 +22,30 @@
       <p class="subtitle" id="siteSubtitle">轻点歌名即可复制</p>
     </header>
 
+    <!-- 筛选栏：类型 / 语种 / 付费（下拉，仿参考图） -->
+    <div class="filter-bar">
+      <label class="filter-select">
+        <span class="fs-label">类型</span>
+        <select id="typeFilter" aria-label="按类型筛选"></select>
+      </label>
+      <label class="filter-select">
+        <span class="fs-label">语种</span>
+        <select id="langFilter" aria-label="按语种筛选"></select>
+      </label>
+      <label class="filter-select">
+        <span class="fs-label">付费</span>
+        <select id="paidFilter" aria-label="按付费筛选">
+          <option value="全部">全部</option>
+          <option value="是">是</option>
+          <option value="否">否</option>
+        </select>
+      </label>
+    </div>
+
     <!-- 搜索框 -->
     <div class="search-box">
       <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="搜索歌名、中文译名或歌手…" aria-label="搜索">
-    </div>
-
-    <!-- 语言筛选 -->
-    <div class="filter-group" id="languageFilter" role="group" aria-label="按语言筛选">
-      <!-- 按钮由 app.js 动态生成 -->
+      <input type="text" id="searchInput" placeholder="请输入内容" aria-label="搜索">
     </div>
 
     <!-- 工具栏：排序按钮 -->
@@ -39,8 +54,25 @@
       <span id="countInfo" class="count-info"></span>
     </div>
 
-    <!-- 歌曲列表 -->
-    <ul class="song-list" id="songList"></ul>
+    <!-- 歌曲表格（小屏横向滚动） -->
+    <div class="table-wrap">
+      <table class="song-table">
+        <thead>
+          <tr>
+            <th class="th-idx">#</th>
+            <th>歌名</th>
+            <th>歌手</th>
+            <th>类型</th>
+            <th>语言</th>
+            <th>是否付费</th>
+            <th>付费礼物</th>
+            <th>备注</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="songBody"></tbody>
+      </table>
+    </div>
 
     <p class="empty-tip" id="emptyTip" hidden>没有找到匹配的歌曲 🎶</p>
 

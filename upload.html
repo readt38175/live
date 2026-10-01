@@ -361,7 +361,10 @@
       const lines = raw.split(/\r?\n/).filter(l => l.trim());
       const header = lines[0].split("\t").map(h => h.trim());
       const col = name => header.findIndex(h => h.includes(name));
-      const cType = col("类型") !== -1 ? col("类型") : col("语言");
+      const cType = col("类型");
+      const cLang = col("语种") !== -1 ? col("语种") : col("语言");
+      const cPaid = col("是否付费");
+      const cGift = col("付费礼物");
       const cArtist = col("手") !== -1 ? col("手") : col("artist");
       const cTitle = header.findIndex(h => h.includes("歌名") && !h.includes("中文"));
       const cTitleZh = col("中文");
@@ -373,13 +376,23 @@
       let lastType = "";
       return lines.slice(1).map(line => {
         const cells = line.split("\t");
-        const t = cells[cType] || lastType;
+        const t = cType > -1 ? (cells[cType] || lastType) : "";
         if (t) lastType = t;
+        // 语言列缺失时兜底：JPOP/动画/VOCALOID/昭和老歌 -> 日文，中文 -> 中文
+        let lang = cLang > -1 ? (cells[cLang] || "").trim() : "";
+        if (!lang) {
+          lang = (t === "中文") ? "中文"
+            : /^(JPOP|动画|VOCALOID|昭和)/.test(t) ? "日文" : t;
+        }
+        const paid = cPaid > -1 ? (cells[cPaid] || "").trim() : "";
         return normalize({
           title: cells[cTitle],
           titleZh: cTitleZh > -1 ? cells[cTitleZh] : "",
           artist: cells[cArtist],
-          language: t,
+          type: t || (cType === -1 ? (cLang > -1 ? lang : "") : ""),
+          language: lang,
+          paid,
+          gift: cGift > -1 ? cells[cGift] : "",
           note: cNote > -1 ? cells[cNote] : "",
           link: ""
         });
@@ -388,11 +401,15 @@
 
     function normalize(s) {
       const strip = v => String(v || "").trim().replace(/^[（(](.*)[)）]$/, "$1").trim();
+      const paid = String(s.paid || "").trim();
       return {
         title: String(s.title || "").trim(),
         titleZh: strip(s.titleZh),
         artist: String(s.artist || "").trim(),
+        type: String(s.type || "").trim(),
         language: String(s.language || "").trim(),
+        paid: paid === "是" ? "是" : "否",
+        gift: String(s.gift || "").trim(),
         note: String(s.note || "").trim(),
         link: String(s.link || "").trim()
       };

@@ -96,22 +96,22 @@ body.has-bg-image .bg-overlay { display: block; }
 
 .container {
   position: relative;
-  max-width: 720px;
+  max-width: 1020px;
   margin: 0 auto;
   padding: 32px 16px 48px;
 }
 
-/* ========== 头部：居中头像 + 标题（仿 kiko.vtbsong.com） ========== */
+/* ========== 头部：居中头像 + 标题 ========== */
 .header {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 .avatar {
-  width: 108px;
-  height: 108px;
+  width: 104px;
+  height: 104px;
   border-radius: 50%;
   object-fit: cover;
   object-position: top;
@@ -133,8 +133,57 @@ body.has-bg-image .bg-overlay { display: block; }
 }
 .subtitle { color: var(--text-light); font-size: 14px; }
 
+/* ========== 筛选栏（类型 / 语种 / 付费 下拉，仿参考图） ========== */
+.filter-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.filter-select {
+  flex: 1;
+  min-width: 150px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px 4px 14px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.filter-select:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-dim);
+}
+.fs-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  padding-right: 10px;
+  border-right: 1px solid var(--border);
+}
+.filter-select select {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 4px;
+  font-size: 14px;
+  font-family: inherit;
+  color: var(--text-light);
+  background: transparent;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+.filter-select select option {
+  background: var(--card);
+  color: var(--text);
+}
+
 /* ========== 搜索框 ========== */
-.search-box { position: relative; margin-bottom: 16px; }
+.search-box { position: relative; margin-bottom: 14px; }
 .search-icon {
   position: absolute;
   left: 14px; top: 50%;
@@ -159,31 +208,6 @@ body.has-bg-image .bg-overlay { display: block; }
   box-shadow: 0 0 0 3px var(--primary-dim);
 }
 
-/* ========== 语言筛选 ========== */
-.filter-group {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.filter-btn {
-  padding: 8px 18px;
-  font-size: 14px;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  background: var(--card);
-  color: var(--text-light);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-.filter-btn:hover { border-color: var(--primary); color: var(--primary); }
-.filter-btn.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: #0b0d12;
-  font-weight: 600;
-}
-
 /* ========== 工具栏 ========== */
 .toolbar {
   display: flex;
@@ -205,84 +229,72 @@ body.has-bg-image .bg-overlay { display: block; }
 .sort-btn.active { background: var(--primary); color: #0b0d12; font-weight: 600; }
 .count-info { font-size: 13px; color: var(--text-light); }
 
-/* ========== 歌曲列表 ========== */
-.song-list { list-style: none; }
-.song-item {
-  display: flex;
-  align-items: center;
-  gap: 11px;
-  padding: 11px 14px;
-  margin-bottom: 8px;
+/* ========== 歌曲表格 ========== */
+.table-wrap {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 13px;
-  cursor: pointer; /* 点击复制歌名 */
-  transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s, background 0.2s;
+  border-radius: 14px;
+  overflow-x: auto;           /* 小屏横向滚动，不破坏布局 */
+  -webkit-overflow-scrolling: touch;
 }
-.song-item:hover {
-  background: var(--card-hover);
-  border-color: rgba(124, 227, 207, 0.35);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(124, 227, 207, 0.08);
-  transform: translateY(-1px);
+.song-table {
+  width: 100%;
+  min-width: 860px;           /* 低于此宽度出现横向滚动条 */
+  border-collapse: collapse;
+  font-size: 14px;
 }
-/* 有图片背景时卡片略带透明感 */
-body.has-bg-image .song-item { background: rgba(21, 24, 35, 0.88); }
-body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.88); }
-body.has-bg-image .filter-btn { background: rgba(21, 24, 35, 0.88); }
-
-.song-index {
-  width: 30px;
-  height: 30px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--primary);
-  background: var(--primary-dim);
-  border-radius: 50%;
-}
-
-.song-info { flex: 1; min-width: 0; }
-.song-title {
-  font-size: 14.5px;
-  font-weight: 600;
-  line-height: 1.5;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-.song-title-zh {
-  font-size: 13px;
-  font-weight: 400;
+.song-table thead th {
+  position: sticky;
+  top: 0;
+  background: #1a1e2c;
   color: var(--text-light);
-  margin-left: 6px;
-}
-/* 歌手与歌名同行（紧凑模式） */
-.song-artist-inline {
   font-size: 13px;
-  font-weight: 400;
-  color: var(--text-light);
-  margin-left: 10px;
+  font-weight: 500;
+  text-align: left;
+  padding: 11px 12px;
   white-space: nowrap;
+  border-bottom: 1px solid var(--border);
+  z-index: 1;
 }
-.song-artist-inline::before {
-  content: "·";
-  margin-right: 10px;
-  color: var(--primary);
+.song-table tbody tr {
+  cursor: pointer; /* 点击复制歌名 */
+  border-bottom: 1px solid rgba(38, 43, 58, 0.55);
+  transition: background 0.15s;
 }
-.song-note {
-  font-size: 12px;
-  color: var(--accent);
-  margin-top: 2px;
+.song-table tbody tr:last-child { border-bottom: none; }
+.song-table tbody tr:hover {
+  background: rgba(124, 227, 207, 0.05);
+}
+.song-table td {
+  padding: 10px 12px;
+  vertical-align: middle;
+  color: var(--text);
 }
 
-.song-tag {
-  flex-shrink: 0;
-  padding: 3px 11px;
+/* 有图片背景时表格略带透明感 */
+body.has-bg-image .table-wrap { background: rgba(21, 24, 35, 0.9); }
+body.has-bg-image .filter-select { background: rgba(21, 24, 35, 0.9); }
+body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
+
+.td-idx {
+  width: 44px;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 13px;
+}
+.td-title { font-weight: 600; min-width: 150px; }
+.title-zh {
+  display: block;            /* 中文译名换行小字，避免列过宽 */
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-light);
+  margin-top: 1px;
+}
+.td-artist { color: var(--text-light); min-width: 120px; }
+
+.type-tag {
+  display: inline-block;
+  padding: 2px 10px;
   font-size: 12px;
   border-radius: 999px;
   background: var(--primary-dim);
@@ -290,11 +302,24 @@ body.has-bg-image .filter-btn { background: rgba(21, 24, 35, 0.88); }
   white-space: nowrap;
 }
 
+.paid-yes {
+  display: inline-block;
+  padding: 2px 10px;
+  font-size: 12px;
+  border-radius: 999px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  font-weight: 600;
+}
+.td-muted { color: var(--text-light); }
+
+.td-note { color: var(--accent); font-size: 12.5px; min-width: 100px; }
+
 .song-link {
-  flex-shrink: 0;
   font-size: 13px;
   color: var(--accent);
   text-decoration: none;
+  white-space: nowrap;
 }
 .song-link:hover { text-decoration: underline; }
 
@@ -307,9 +332,11 @@ body.has-bg-image .filter-btn { background: rgba(21, 24, 35, 0.88); }
 /* ========== 移动端适配 ========== */
 @media (max-width: 480px) {
   .header h1 { font-size: 21px; }
-  .avatar { width: 92px; height: 92px; }
-  .filter-group { flex-direction: column; }
-  .filter-btn { width: 100%; text-align: center; }
-  .song-item { padding: 12px; }
-  .song-tag { display: none; }
+  .avatar { width: 88px; height: 88px; }
+  .filter-bar { gap: 8px; }
+  .filter-select { min-width: 100%; }
+  .container { padding: 24px 10px 40px; }
+  .table-wrap { border-radius: 12px; }
+  /* 提示用户表格可横向滑动 */
+  .table-wrap { position: relative; }
 }

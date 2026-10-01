@@ -1,13 +1,17 @@
 /* ================= 全局状态 ================= */
 let songs = [];              // 全部歌曲数据（来自 songs.json）
 let site = null;             // 站点配置（来自 site.json，可能不存在）
-let currentLanguage = "全部"; // 当前选中的语言筛选
+let currentType = "全部";     // 当前类型筛选
+let currentLang = "全部";     // 当前语种筛选
+let currentPaid = "全部";     // 当前付费筛选
 let sortArtist = false;      // 是否按歌手名排序
 let toastTimer = null;       // 复制提示计时器
 
-const listEl = document.getElementById("songList");
-const filterEl = document.getElementById("languageFilter");
+const bodyEl = document.getElementById("songBody");
 const searchEl = document.getElementById("searchInput");
+const typeEl = document.getElementById("typeFilter");
+const langEl = document.getElementById("langFilter");
+const paidEl = document.getElementById("paidFilter");
 const emptyEl = document.getElementById("emptyTip");
 const countEl = document.getElementById("countInfo");
 const sortBtn = document.getElementById("sortArtistBtn");
@@ -26,7 +30,7 @@ async function init() {
   site = siteRes || { siteName: "我的歌单", subtitle: "好听的歌都在这里" };
 
   applySiteConfig();
-  buildLanguageFilter();
+  buildFilters();
   bindEvents();
   render();
 }
@@ -65,6 +69,9 @@ function applySiteConfig() {
 /* ================= 事件 ================= */
 function bindEvents() {
   searchEl.addEventListener("input", render);
+  typeEl.addEventListener("change", () => { currentType = typeEl.value; render(); });
+  langEl.addEventListener("change", () => { currentLang = langEl.value; render(); });
+  paidEl.addEventListener("change", () => { currentPaid = paidEl.value; render(); });
 
   sortBtn.addEventListener("click", () => {
     sortArtist = !sortArtist;
@@ -104,24 +111,23 @@ function showToast(msg) {
   toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1600);
 }
 
-/* ================= 生成语言筛选按钮 ================= */
-function buildLanguageFilter() {
-  const langs = [...new Set(songs.map(s => s.language).filter(Boolean))];
-  const all = ["全部", ...langs];
-
-  filterEl.innerHTML = "";
-  all.forEach(lang => {
-    const btn = document.createElement("button");
-    btn.className = "filter-btn" + (lang === currentLanguage ? " active" : "");
-    btn.textContent = lang;
-    btn.addEventListener("click", () => {
-      currentLanguage = lang;
-      filterEl.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
-      btn.classList.add("active");
-      render();
-    });
-    filterEl.appendChild(btn);
+/* ================= 生成下拉筛选选项 ================= */
+function fillSelect(sel, values) {
+  sel.innerHTML = "";
+  ["全部", ...values].forEach(v => {
+    const opt = document.createElement("option");
+    opt.value = v;
+    opt.textContent = v === "全部" ? "请选择" : v;
+    sel.appendChild(opt);
   });
+  sel.value = "全部";
+}
+
+function buildFilters() {
+  const types = [...new Set(songs.map(s => s.type).filter(Boolean))];
+  const langs = [...new Set(songs.map(s => s.language).filter(Boolean))];
+  fillSelect(typeEl, types);
+  fillSelect(langEl, langs);
 }
 
 /* ================= 核心渲染 ================= */
@@ -130,10 +136,14 @@ function render() {
 
   // 1. 筛选（关键字匹配：歌名 / 中文译名 / 歌手 / 备注）
   let result = songs.filter(s => {
-    const matchLang = currentLanguage === "全部" || s.language === currentLanguage;
+    const matchType = currentType === "全部" || s.type === currentType;
+    const matchLang = currentLang === "全部" || s.language === currentLang;
+    const matchPaid = currentPaid === "全部"
+      || (s.paid || "否") === currentPaid
+      || (currentPaid === "是" && (s.gift || "").trim()); // 有礼物也算付费
     const hay = [s.title, s.titleZh, s.artist, s.note]
       .map(x => (x || "").toLowerCase()).join(" ");
-    return matchLang && (!keyword || hay.includes(keyword));
+    return matchType && matchLang && matchPaid && (!keyword || hay.includes(keyword));
   });
 
   // 2. 排序
@@ -143,59 +153,82 @@ function render() {
     );
   }
 
-  // 3. 渲染列表
+  // 3. 渲染表格
   countEl.textContent = `共 ${result.length} 首`;
   emptyEl.hidden = result.length > 0;
-  listEl.innerHTML = "";
+  bodyEl.innerHTML = "";
 
   result.forEach((song, i) => {
-    const li = document.createElement("li");
-    li.className = "song-item";
-    li.title = "点击复制歌名";
-    li.addEventListener("click", () => copyText(song.title || ""));
+    const tr = document.createElement("tr");
+    tr.className = "song-row";
+    tr.title = "点击复制歌名";
+    tr.addEventListener("click", () => copyText(song.title || ""));
 
-    const index = document.createElement("span");
-    index.className = "song-index";
-    index.textContent = i + 1;
+    // 序号
+    const tdIdx = document.createElement("td");
+    tdIdx.className = "td-idx";
+    tdIdx.textContent = i + 1;
+    tr.appendChild(tdIdx);
 
-    const info = document.createElement("div");
-    info.className = "song-info";
-
-    // 歌名 + 中文译名 + 歌手 同一行（紧凑模式）
-    const titleDiv = document.createElement("div");
-    titleDiv.className = "song-title";
-    titleDiv.textContent = song.title || "未知歌名";
+    // 歌名（+ 中文译名小字）
+    const tdTitle = document.createElement("td");
+    tdTitle.className = "td-title";
+    tdTitle.textContent = song.title || "未知歌名";
     if (song.titleZh) {
       const zh = document.createElement("span");
-      zh.className = "song-title-zh";
+      zh.className = "title-zh";
       zh.textContent = song.titleZh;
-      titleDiv.appendChild(zh);
+      tdTitle.appendChild(zh);
     }
-    if (song.artist) {
-      const ar = document.createElement("span");
-      ar.className = "song-artist-inline";
-      ar.textContent = song.artist;
-      titleDiv.appendChild(ar);
-    }
-    info.appendChild(titleDiv);
+    tr.appendChild(tdTitle);
 
-    if (song.note) {
-      const noteDiv = document.createElement("div");
-      noteDiv.className = "song-note";
-      noteDiv.textContent = "📌 " + song.note;
-      info.appendChild(noteDiv);
-    }
+    // 歌手
+    const tdArtist = document.createElement("td");
+    tdArtist.className = "td-artist";
+    tdArtist.textContent = song.artist || "";
+    tr.appendChild(tdArtist);
 
-    li.appendChild(index);
-    li.appendChild(info);
-
-    if (song.language) {
+    // 类型（小标签）
+    const tdType = document.createElement("td");
+    if (song.type) {
       const tag = document.createElement("span");
-      tag.className = "song-tag";
-      tag.textContent = song.language;
-      li.appendChild(tag);
+      tag.className = "type-tag";
+      tag.textContent = song.type;
+      tdType.appendChild(tag);
     }
+    tr.appendChild(tdType);
 
+    // 语言
+    const tdLang = document.createElement("td");
+    tdLang.textContent = song.language || "";
+    tr.appendChild(tdLang);
+
+    // 是否付费（是 -> 高亮）
+    const tdPaid = document.createElement("td");
+    if ((song.paid || "否") === "是") {
+      const b = document.createElement("span");
+      b.className = "paid-yes";
+      b.textContent = "是";
+      tdPaid.appendChild(b);
+    } else {
+      tdPaid.textContent = "否";
+      tdPaid.className = "td-muted";
+    }
+    tr.appendChild(tdPaid);
+
+    // 付费礼物
+    const tdGift = document.createElement("td");
+    tdGift.textContent = song.gift || "";
+    tr.appendChild(tdGift);
+
+    // 备注（粉色小字，对应 Excel「备注」列）
+    const tdNote = document.createElement("td");
+    tdNote.className = "td-note";
+    tdNote.textContent = song.note || "";
+    tr.appendChild(tdNote);
+
+    // 收听链接
+    const tdLink = document.createElement("td");
     if (song.link) {
       const a = document.createElement("a");
       a.className = "song-link";
@@ -204,9 +237,10 @@ function render() {
       a.rel = "noopener";
       a.textContent = "▶ 收听";
       a.addEventListener("click", e => e.stopPropagation()); // 点链接不触发复制
-      li.appendChild(a);
+      tdLink.appendChild(a);
     }
+    tr.appendChild(tdLink);
 
-    listEl.appendChild(li);
+    bodyEl.appendChild(tr);
   });
 }
