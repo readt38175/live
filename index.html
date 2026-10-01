@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我的歌单</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <h1>🎵 我的歌单</h1>
+      <p class="subtitle">好听的歌都在这里</p>
+    </header>
+
+    <!-- 搜索框 -->
+    <div class="search-box">
+      <input type="text" id="searchInput" placeholder="搜索歌名或歌手…" aria-label="搜索">
+    </div>
+
+    <!-- 语言筛选 -->
+    <div class="filter-group" id="languageFilter" role="group" aria-label="按语言筛选">
+      <!-- 按钮由 app.js 动态生成 -->
+    </div>
+
+    <!-- 工具栏：排序按钮 -->
+    <div class="toolbar">
+      <button id="sortArtistBtn" class="sort-btn" type="button">按歌手名排序</button>
+      <span id="countInfo" class="count-info"></span>
+    </div>
+
+    <!-- 歌曲列表 -->
+    <ul class="song-list" id="songList"></ul>
+
+    <p class="empty-tip" id="emptyTip" hidden>没有找到匹配的歌曲 🎶</p>
+
+    <footer class="footer">
+      <a href="upload.html" class="admin-link">管理页入口</a>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

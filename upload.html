@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>歌单管理页</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #3b82f6; --primary-dark: #2563eb;
+      --bg: #f5f7fb; --card: #fff;
+      --text: #1f2937; --muted: #6b7280; --border: #e5e7eb;
+      --danger: #ef4444; --ok: #10b981;
+    }
+    body {
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+      display: flex; justify-content: center; padding: 32px 16px;
+    }
+    .card {
+      width: 100%; max-width: 640px;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 28px 24px;
+    }
+    h1 { font-size: 22px; margin-bottom: 4px; }
+    .desc { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    label { display: block; font-size: 14px; font-weight: 600; margin: 16px 0 6px; }
+    input[type="password"], input[type="text"], textarea {
+      width: 100%; padding: 10px 12px; font-size: 14px;
+      border: 1px solid var(--border); border-radius: 8px; outline: none;
+      font-family: inherit;
+    }
+    textarea { min-height: 200px; resize: vertical; font-family: Consolas, monospace; }
+    input:focus, textarea:focus { border-color: var(--primary); }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+    button {
+      padding: 10px 18px; font-size: 14px; border: none;
+      border-radius: 8px; cursor: pointer; transition: 0.2s;
+    }
+    .btn-main { background: var(--primary); color: #fff; }
+    .btn-main:hover { background: var(--primary-dark); }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .msg { margin-top: 14px; font-size: 13px; display: none; padding: 10px 12px; border-radius: 8px; }
+    .msg.ok { display: block; background: rgba(16,185,129,.1); color: var(--ok); }
+    .msg.err { display: block; background: rgba(239,68,68,.1); color: var(--danger); }
+    .github-box { border-top: 1px dashed var(--border); margin-top: 24px; padding-top: 8px; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.6; }
+    .lock { text-align: center; padding: 40px 0; }
+    .lock p { color: var(--muted); font-size: 14px; margin: 8px 0 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <!-- 密码锁定界面 -->
+    <div id="lockView" class="lock">
+      <h1>🔒 管理页</h1>
+      <p>请输入管理密码后继续</p>
+      <input type="password" id="pwdInput" placeholder="管理密码">
+      <div class="row" style="justify-content:center">
+        <button class="btn-main" id="unlockBtn">解锁</button>
+      </div>
+      <div class="msg" id="lockMsg"></div>
+    </div>
+
+    <!-- 解锁后的管理界面 -->
+    <div id="adminView" style="display:none">
+      <h1>🎵 歌单管理</h1>
+      <p class="desc">把新的歌单数据粘贴到下面（支持 JSON 或 Excel 复制的表格文本），点「预览校验」，没问题再「下载 songs.json」上传回 GitHub 仓库即可触发网站自动更新。</p>
+
+      <label for="dataInput">歌单数据（JSON 数组，或从 Excel 复制的制表符分隔文本）</label>
+      <textarea id="dataInput" placeholder='方式一 JSON：
+[{"title":"晴天","artist":"周杰伦","language":"华语","link":""}]
+
+方式二 Excel 复制后直接粘贴（首行为表头：歌名 歌手 语言 链接）'></textarea>
+
+      <div class="row">
+        <button class="btn-main" id="previewBtn">预览校验</button>
+        <button class="btn-ghost" id="downloadBtn" disabled>下载 songs.json</button>
+        <a class="btn-ghost" href="index.html" style="display:inline-flex;align-items:center;text-decoration:none;color:var(--text)">返回歌单页</a>
+      </div>
+      <div class="msg" id="adminMsg"></div>
+
+      <div class="github-box">
+        <label>（可选）直接推送到 GitHub</label>
+        <p class="hint">填写仓库信息和个人访问令牌（Token，需 repo 权限），点「推送更新」后会自动写回仓库中的 songs.json 并触发 Pages 重新部署。Token 只在本地使用，不会保存。</p>
+        <input type="text" id="ghRepo" placeholder="用户名/仓库名，例如 myname/songlist" style="margin-top:8px">
+        <input type="password" id="ghToken" placeholder="GitHub 个人访问令牌 Token" style="margin-top:8px">
+        <div class="row">
+          <button class="btn-main" id="pushBtn" disabled>推送更新</button>
+        </div>
+        <div class="msg" id="ghMsg"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ================= 配置 ================= */
+    const ADMIN_PASSWORD = "123456"; // 管理密码，上线前请修改！
+    const FILE_PATH = "songs.json";  // 要写回仓库的文件路径
+    const BRANCH = "main";           // 仓库分支名，按实际情况修改
+
+    let validSongs = null;
+
+    /* ================= 解锁逻辑 ================= */
+    const lockView = document.getElementById("lockView");
+    const adminView = document.getElementById("adminView");
+
+    function tryUnlock() {
+      const pwd = document.getElementById("pwdInput").value;
+      const msg = document.getElementById("lockMsg");
+      if (pwd === ADMIN_PASSWORD) {
+        lockView.style.display = "none";
+        adminView.style.display = "block";
+      } else {
+        msg.className = "msg err";
+        msg.textContent = "密码错误，请重试";
+      }
+    }
+    document.getElementById("unlockBtn").addEventListener("click", tryUnlock);
+    document.getElementById("pwdInput").addEventListener("keydown", e => {
+      if (e.key === "Enter") tryUnlock();
+    });
+
+    /* ================= 解析数据：JSON 或 Excel 表格文本 ================= */
+    function parseInput(raw) {
+      raw = raw.trim();
+      if (!raw) throw new Error("内容为空，请先粘贴数据");
+
+      // 方式一：JSON
+      if (raw.startsWith("[") || raw.startsWith("{")) {
+        const data = JSON.parse(raw);
+        const arr = Array.isArray(data) ? data : [data];
+        return arr.map(normalize);
+      }
+
+      // 方式二：Excel / 表格文本（制表符分隔）
+      const lines = raw.split(/\r?\n/).filter(l => l.trim());
+      const header = lines[0].split("\t").map(h => h.trim());
+      // 识别表头列位置（兼容「歌名/标题/title」等写法）
+      const col = name => header.findIndex(h => h.includes(name));
+      const cTitle = col("歌") !== -1 ? col("歌") : col("title");
+      const cArtist = col("手") !== -1 ? col("手") : col("artist");
+      const cLang = header.length > 2 ? 2 : -1;
+      const cLink = header.length > 3 ? 3 : -1;
+      if (cTitle === -1 || cArtist === -1) {
+        throw new Error("无法识别表头，请保证第一行包含「歌名」和「歌手」列");
+      }
+
+      return lines.slice(1).map(line => {
+        const cells = line.split("\t");
+        return normalize({
+          title: cells[cTitle],
+          artist: cells[cArtist],
+          language: cLang > -1 ? cells[cLang] : "",
+          link: cLink > -1 ? cells[cLink] : ""
+        });
+      });
+    }
+
+    function normalize(s) {
+      return {
+        title: String(s.title || "").trim(),
+        artist: String(s.artist || "").trim(),
+        language: String(s.language || "").trim(),
+        link: String(s.link || "").trim()
+      };
+    }
+
+    /* ================= 预览校验 ================= */
+    const adminMsg = document.getElementById("adminMsg");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const pushBtn = document.getElementById("pushBtn");
+
+    document.getElementById("previewBtn").addEventListener("click", () => {
+      try {
+        validSongs = parseInput(document.getElementById("dataInput").value);
+        const bad = validSongs.filter(s => !s.title || !s.artist);
+        if (bad.length) throw new Error(`有 ${bad.length} 条记录缺少歌名或歌手，请检查`);
+        adminMsg.className = "msg ok";
+        adminMsg.textContent = `校验通过，共 ${validSongs.length} 首歌。可以下载 songs.json 或直接推送到 GitHub。`;
+        downloadBtn.disabled = false;
+        pushBtn.disabled = false;
+      } catch (e) {
+        validSongs = null;
+        adminMsg.className = "msg err";
+        adminMsg.textContent = "解析失败：" + e.message;
+        downloadBtn.disabled = true;
+        pushBtn.disabled = true;
+      }
+    });
+
+    /* ================= 下载 songs.json ================= */
+    downloadBtn.addEventListener("click", () => {
+      if (!validSongs) return;
+      const blob = new Blob([JSON.stringify(validSongs, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "songs.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    /* ================= 推送到 GitHub ================= */
+    const ghMsg = document.getElementById("ghMsg");
+    pushBtn.addEventListener("click", async () => {
+      if (!validSongs) return;
+      const repo = document.getElementById("ghRepo").value.trim();
+      const token = document.getElementById("ghToken").value.trim();
+      ghMsg.className = "msg err";
+      if (!repo || !token) { ghMsg.textContent = "请先填写仓库名和 Token"; return; }
+
+      pushBtn.disabled = true;
+      pushBtn.textContent = "推送中…";
+      try {
+        // 1. 取当前文件的 sha（API 要求）
+        const metaRes = await fetch(`https://api.github.com/repos/${repo}/contents/${FILE_PATH}?ref=${BRANCH}`, {
+          headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" }
+        });
+        if (!metaRes.ok) throw new Error("获取文件信息失败，请检查仓库名 / 分支名 / Token 权限");
+        const sha = (await metaRes.json()).sha;
+
+        // 2. 提交新内容
+        const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/${FILE_PATH}`, {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
+          body: JSON.stringify({
+            message: "update songs.json via upload.html",
+            content: btoa(unescape(encodeURIComponent(JSON.stringify(validSongs, null, 2)))),
+            branch: BRANCH,
+            sha
+          })
+        });
+        if (!putRes.ok) throw new Error("推送失败（HTTP " + putRes.status + "），请检查 Token 是否有 repo 权限");
+        ghMsg.className = "msg ok";
+        ghMsg.textContent = "推送成功！等待约 1 分钟，GitHub Pages 会自动更新网站。";
+      } catch (e) {
+        ghMsg.className = "msg err";
+        ghMsg.textContent = e.message;
+      } finally {
+        pushBtn.disabled = false;
+        pushBtn.textContent = "推送更新";
+      }
+    });
+  </script>
+</body>
+</html>
