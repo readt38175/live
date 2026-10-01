@@ -10,15 +10,21 @@
   <!-- 背景图片层（由 app.js 依据 site.json 控制） -->
   <div class="bg-image" id="bgImage" aria-hidden="true"></div>
   <div class="bg-overlay" id="bgOverlay" aria-hidden="true"></div>
+  <!-- 顶部氛围光晕 -->
+  <div class="glow glow-mint" aria-hidden="true"></div>
+  <div class="glow glow-pink" aria-hidden="true"></div>
 
   <div class="container">
     <header class="header">
-      <h1 id="siteTitle">🎵 我的歌单</h1>
+      <img class="avatar" src="avatar.png" alt="站点头像"
+           onerror="this.style.display='none'">
+      <h1 id="siteTitle">我的歌单</h1>
       <p class="subtitle" id="siteSubtitle">好听的歌都在这里</p>
     </header>
 
     <!-- 搜索框 -->
     <div class="search-box">
+      <span class="search-icon">🔍</span>
       <input type="text" id="searchInput" placeholder="搜索歌名、中文译名或歌手…" aria-label="搜索">
     </div>
 

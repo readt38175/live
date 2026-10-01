@@ -8,8 +8,8 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --primary: #3b82f6; --primary-dark: #2563eb;
-      --bg: #f5f7fb; --card: #fff;
-      --text: #1f2937; --muted: #6b7280; --border: #e5e7eb;
+      --bg: #0b0d12; --card: #151823;
+      --text: #e8eaf0; --muted: #9aa1b2; --border: #262b3a;
       --danger: #ef4444; --ok: #10b981;
     }
     body {
@@ -20,7 +20,7 @@
     .card {
       width: 100%; max-width: 680px;
       background: var(--card); border: 1px solid var(--border);
-      border-radius: 14px; padding: 28px 24px;
+      border-radius: 14px; padding: 28px 24px; box-shadow: 0 10px 40px rgba(0,0,0,.4);
     }
     h1 { font-size: 22px; margin-bottom: 4px; }
     h2 { font-size: 16px; margin: 24px 0 8px; padding-top: 16px; border-top: 1px dashed var(--border); }
@@ -29,7 +29,7 @@
     input[type="password"], input[type="text"], input[type="url"], textarea, select {
       width: 100%; padding: 10px 12px; font-size: 14px;
       border: 1px solid var(--border); border-radius: 8px; outline: none;
-      font-family: inherit; background: #fff;
+      font-family: inherit; background: var(--card); color: var(--text);
     }
     textarea { min-height: 180px; resize: vertical; font-family: Consolas, monospace; font-size: 13px; }
     input:focus, textarea:focus, select:focus { border-color: var(--primary); }
@@ -60,7 +60,7 @@
     }
     .bg-preview .fake-card {
       position: absolute; left: 12px; right: 12px; bottom: 12px;
-      background: rgba(255,255,255,0.92); border: 1px solid var(--border);
+      background: rgba(21,24,35,0.9); border: 1px solid var(--border);
       border-radius: 8px; padding: 8px 12px; font-size: 13px;
     }
     .lock { text-align: center; padding: 40px 0; }
@@ -111,8 +111,8 @@
       <div id="bgColorBox" style="display:none">
         <label>背景颜色</label>
         <div class="row" style="margin-top:0">
-          <input type="color" id="bgColorInput" value="#f5f7fb">
-          <span class="hint" id="bgColorText">#f5f7fb</span>
+          <input type="color" id="bgColorInput" value="#0b0d12">
+          <span class="hint" id="bgColorText">#0b0d12</span>
         </div>
       </div>
 
@@ -173,7 +173,7 @@
     let siteConfig = {       // 站点配置（名称 + 背景）
       siteName: "我的歌单",
       subtitle: "好听的歌都在这里",
-      background: { type: "default", color: "#f5f7fb", image: "", overlay: 0.35 }
+      background: { type: "default", color: "#0b0d12", image: "", overlay: 0.35 }
     };
 
     /* ================= 解锁逻辑 ================= */
@@ -205,14 +205,14 @@
         const data = await res.json();
         siteConfig = Object.assign(siteConfig, data);
         siteConfig.background = Object.assign(
-          { type: "default", color: "#f5f7fb", image: "", overlay: 0.35 },
+          { type: "default", color: "#0b0d12", image: "", overlay: 0.35 },
           data.background || {}
         );
         document.getElementById("siteNameInput").value = siteConfig.siteName || "";
         document.getElementById("subtitleInput").value = siteConfig.subtitle || "";
         const bg = siteConfig.background;
         document.querySelector(`input[name="bgType"][value="${bg.type}"]`).checked = true;
-        document.getElementById("bgColorInput").value = bg.color || "#f5f7fb";
+        document.getElementById("bgColorInput").value = bg.color || "#0b0d12";
         document.getElementById("bgOverlayInput").value = bg.overlay != null ? bg.overlay : 0.35;
         updateNamePreview();
         updateBgTypeUI();
@@ -301,7 +301,7 @@
         const img = resolvedImage();
         const o = parseFloat(document.getElementById("bgOverlayInput").value);
         box.style.background = img
-          ? `linear-gradient(rgba(245,247,248,${o}),rgba(245,247,248,${o})), url("${img}") center/cover`
+          ? `linear-gradient(rgba(11,13,18,${o}),rgba(11,13,18,${o})), url("${img}") center/cover`
           : "var(--bg)";
       } else {
         box.style.background = "var(--bg)";

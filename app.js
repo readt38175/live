@@ -34,7 +34,7 @@ function applySiteConfig() {
   // 名称
   if (site.siteName) {
     document.title = site.siteName;
-    document.getElementById("siteTitle").textContent = "🎵 " + site.siteName;
+    document.getElementById("siteTitle").textContent = site.siteName;
   }
   if (typeof site.subtitle === "string") {
     document.getElementById("siteSubtitle").textContent = site.subtitle;
@@ -51,10 +51,10 @@ function applySiteConfig() {
   } else if (bg.type === "image" && bg.image) {
     imgEl.style.backgroundImage = `url("${bg.image}")`;
     const o = Math.min(Math.max(Number(bg.overlay) || 0, 0), 1);
-    // 蒙层颜色取浅灰白，数值越大文字越清晰
-    overlayEl.style.background = `rgba(245,247,248,${o})`;
+    // 蒙层颜色取深色（黑底主题），数值越大文字越清晰
+    overlayEl.style.background = `rgba(11,13,18,${o})`;
     body.classList.add("has-bg-image");
-    body.style.background = "#f5f7fb"; // 图片加载前的兜底色
+    body.style.background = "#0b0d12"; // 图片加载前的兜底色
   } else {
     body.style.background = "";
   }
