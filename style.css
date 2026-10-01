@@ -291,6 +291,9 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   margin-top: 1px;
 }
 .td-artist { color: var(--text-light); min-width: 120px; }
+/* 语言列：固定不换行，避免挤成两行 */
+.td-lang { white-space: nowrap; }
+.song-table th:nth-child(5) { min-width: 56px; }
 
 .type-tag {
   display: inline-block;

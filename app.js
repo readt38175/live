@@ -200,19 +200,17 @@ function render() {
 
     // 语言
     const tdLang = document.createElement("td");
+    tdLang.className = "td-lang";
     tdLang.textContent = song.language || "";
     tr.appendChild(tdLang);
 
-    // 是否付费（是 -> 高亮）
+    // 是否付费（是 -> 粉色高亮；否 -> 留空）
     const tdPaid = document.createElement("td");
     if ((song.paid || "否") === "是") {
       const b = document.createElement("span");
       b.className = "paid-yes";
       b.textContent = "是";
       tdPaid.appendChild(b);
-    } else {
-      tdPaid.textContent = "否";
-      tdPaid.className = "td-muted";
     }
     tr.appendChild(tdPaid);
 
