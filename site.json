@@ -1,0 +1,10 @@
+{
+  "siteName": "我的歌单",
+  "subtitle": "好听的歌都在这里",
+  "background": {
+    "type": "default",
+    "color": "#f5f7fb",
+    "image": "",
+    "overlay": 0.35
+  }
+}

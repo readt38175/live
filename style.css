@@ -18,7 +18,29 @@ body {
   min-height: 100vh;
 }
 
+/* ========== 背景图层（管理页可配置） ========== */
+.bg-image {
+  position: fixed;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: -2;
+  display: none;
+}
+.bg-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(245, 247, 248, 0);
+  z-index: -1;
+  display: none;
+}
+/* 启用图片背景时半透明蒙层保证内容可读 */
+body.has-bg-image .bg-image,
+body.has-bg-image .bg-overlay { display: block; }
+
 .container {
+  position: relative;
   max-width: 720px;
   margin: 0 auto;
   padding: 24px 16px 48px;
@@ -101,6 +123,10 @@ body {
   transition: box-shadow 0.2s, transform 0.2s;
 }
 .song-item:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); transform: translateY(-1px); }
+/* 有图片背景时卡片略带透明感 */
+body.has-bg-image .song-item { background: rgba(255,255,255,0.92); }
+body.has-bg-image #searchInput { background: rgba(255,255,255,0.92); }
+body.has-bg-image .filter-btn { background: rgba(255,255,255,0.92); }
 
 .song-index {
   width: 28px;
@@ -116,8 +142,15 @@ body {
 }
 
 .song-info { flex: 1; min-width: 0; }
-.song-title { font-size: 15px; font-weight: 600; }
+.song-title { font-size: 15px; font-weight: 600; line-height: 1.4; }
+.song-title-zh {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-light);
+  margin-left: 6px;
+}
 .song-artist { font-size: 13px; color: var(--text-light); margin-top: 2px; }
+.song-note { font-size: 12px; color: var(--primary); margin-top: 3px; }
 
 .song-tag {
   flex-shrink: 0;
@@ -126,6 +159,7 @@ body {
   border-radius: 999px;
   background: rgba(59,130,246,0.1);
   color: var(--primary);
+  white-space: nowrap;
 }
 
 .song-link {
@@ -148,4 +182,5 @@ body {
   .filter-group { flex-direction: column; }
   .filter-btn { width: 100%; text-align: center; }
   .song-item { padding: 12px; }
+  .song-tag { display: none; }
 }

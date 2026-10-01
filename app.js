@@ -1,7 +1,8 @@
 /* ================= 全局状态 ================= */
-let songs = [];          // 全部歌曲数据（来自 songs.json）
+let songs = [];              // 全部歌曲数据（来自 songs.json）
+let site = null;             // 站点配置（来自 site.json，可能不存在）
 let currentLanguage = "全部"; // 当前选中的语言筛选
-let sortArtist = false;  // 是否按歌手名排序
+let sortArtist = false;      // 是否按歌手名排序
 
 const listEl = document.getElementById("songList");
 const filterEl = document.getElementById("languageFilter");
@@ -14,18 +15,49 @@ const sortBtn = document.getElementById("sortArtistBtn");
 init();
 
 async function init() {
-  try {
-    const res = await fetch("songs.json");
-    songs = await res.json();
-  } catch (e) {
-    listEl.innerHTML = "";
-    emptyEl.hidden = false;
-    emptyEl.textContent = "读取 songs.json 失败，请检查文件是否存在";
-    return;
-  }
+  // 并行加载歌单数据 + 站点配置（site.json 缺失时用默认值）
+  const [songsRes, siteRes] = await Promise.all([
+    fetch("songs.json").then(r => r.ok ? r.json() : Promise.reject()),
+    fetch("site.json").then(r => r.ok ? r.json() : null).catch(() => null)
+  ]);
+  songs = songsRes;
+  site = siteRes || { siteName: "我的歌单", subtitle: "好听的歌都在这里" };
+
+  applySiteConfig();
   buildLanguageFilter();
   bindEvents();
   render();
+}
+
+/* ================= 站点配置：名称 + 背景 ================= */
+function applySiteConfig() {
+  // 名称
+  if (site.siteName) {
+    document.title = site.siteName;
+    document.getElementById("siteTitle").textContent = "🎵 " + site.siteName;
+  }
+  if (typeof site.subtitle === "string") {
+    document.getElementById("siteSubtitle").textContent = site.subtitle;
+  }
+
+  // 背景
+  const bg = site.background || {};
+  const body = document.body;
+  const imgEl = document.getElementById("bgImage");
+  const overlayEl = document.getElementById("bgOverlay");
+
+  if (bg.type === "color" && bg.color) {
+    body.style.background = bg.color;
+  } else if (bg.type === "image" && bg.image) {
+    imgEl.style.backgroundImage = `url("${bg.image}")`;
+    const o = Math.min(Math.max(Number(bg.overlay) || 0, 0), 1);
+    // 蒙层颜色取浅灰白，数值越大文字越清晰
+    overlayEl.style.background = `rgba(245,247,248,${o})`;
+    body.classList.add("has-bg-image");
+    body.style.background = "#f5f7fb"; // 图片加载前的兜底色
+  } else {
+    body.style.background = "";
+  }
 }
 
 /* ================= 事件 ================= */
@@ -64,14 +96,12 @@ function buildLanguageFilter() {
 function render() {
   const keyword = searchEl.value.trim().toLowerCase();
 
-  // 1. 筛选
+  // 1. 筛选（关键字匹配：歌名 / 中文译名 / 歌手 / 备注）
   let result = songs.filter(s => {
     const matchLang = currentLanguage === "全部" || s.language === currentLanguage;
-    const matchKey =
-      !keyword ||
-      (s.title || "").toLowerCase().includes(keyword) ||
-      (s.artist || "").toLowerCase().includes(keyword);
-    return matchLang && matchKey;
+    const hay = [s.title, s.titleZh, s.artist, s.note]
+      .map(x => (x || "").toLowerCase()).join(" ");
+    return matchLang && (!keyword || hay.includes(keyword));
   });
 
   // 2. 排序
@@ -96,10 +126,29 @@ function render() {
 
     const info = document.createElement("div");
     info.className = "song-info";
-    info.innerHTML = `
-      <div class="song-title">${escapeHtml(song.title || "未知歌名")}</div>
-      <div class="song-artist">${escapeHtml(song.artist || "未知歌手")}</div>
-    `;
+
+    const titleDiv = document.createElement("div");
+    titleDiv.className = "song-title";
+    titleDiv.textContent = song.title || "未知歌名";
+    if (song.titleZh) {
+      const zh = document.createElement("span");
+      zh.className = "song-title-zh";
+      zh.textContent = song.titleZh;
+      titleDiv.appendChild(zh);
+    }
+    info.appendChild(titleDiv);
+
+    const artistDiv = document.createElement("div");
+    artistDiv.className = "song-artist";
+    artistDiv.textContent = song.artist || "未知歌手";
+    info.appendChild(artistDiv);
+
+    if (song.note) {
+      const noteDiv = document.createElement("div");
+      noteDiv.className = "song-note";
+      noteDiv.textContent = "📌 " + song.note;
+      info.appendChild(noteDiv);
+    }
 
     li.appendChild(index);
     li.appendChild(info);
@@ -123,13 +172,4 @@ function render() {
 
     listEl.appendChild(li);
   });
-}
-
-/* ================= 工具函数：防 HTML 注入 ================= */
-function escapeHtml(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
