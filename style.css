@@ -24,7 +24,28 @@ body {
   overflow-x: hidden;
 }
 
-/* ========== 背景图层（管理页可配置） ========== */
+/* ========== 复制成功提示（toast） ========== */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 36px;
+  transform: translateX(-50%) translateY(20px);
+  background: var(--primary);
+  color: #0b0d12;
+  padding: 10px 22px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.25s;
+  z-index: 999;
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ========== 背景图位置自适应（星空等图片背景） ========== */
+/* 桌面端：居中铺满 */
 .bg-image {
   position: fixed;
   inset: 0;
@@ -34,6 +55,15 @@ body {
   z-index: -3;
   display: none;
 }
+/* 平板端：保持居中，优先展示星空主体 */
+@media (min-width: 481px) and (max-width: 1024px) {
+  .bg-image { background-position: center center; }
+}
+/* 移动端：竖屏比例下取中上部，避免星空主体被裁掉 */
+@media (max-width: 480px) {
+  .bg-image { background-position: center top; }
+}
+
 .bg-overlay {
   position: fixed;
   inset: 0;
@@ -180,12 +210,13 @@ body.has-bg-image .bg-overlay { display: block; }
 .song-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 14px 16px;
-  margin-bottom: 10px;
+  gap: 11px;
+  padding: 11px 14px;
+  margin-bottom: 8px;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 13px;
+  cursor: pointer; /* 点击复制歌名 */
   transition: box-shadow 0.2s, transform 0.2s, border-color 0.2s, background 0.2s;
 }
 .song-item:hover {
@@ -214,18 +245,39 @@ body.has-bg-image .filter-btn { background: rgba(21, 24, 35, 0.88); }
 }
 
 .song-info { flex: 1; min-width: 0; }
-.song-title { font-size: 15px; font-weight: 600; line-height: 1.45; }
+.song-title {
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
 .song-title-zh {
   font-size: 13px;
   font-weight: 400;
   color: var(--text-light);
   margin-left: 6px;
 }
-.song-artist { font-size: 13px; color: var(--text-light); margin-top: 2px; }
+/* 歌手与歌名同行（紧凑模式） */
+.song-artist-inline {
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--text-light);
+  margin-left: 10px;
+  white-space: nowrap;
+}
+.song-artist-inline::before {
+  content: "·";
+  margin-right: 10px;
+  color: var(--primary);
+}
 .song-note {
   font-size: 12px;
   color: var(--accent);
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
 .song-tag {

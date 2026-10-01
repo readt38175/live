@@ -3,6 +3,7 @@ let songs = [];              // 全部歌曲数据（来自 songs.json）
 let site = null;             // 站点配置（来自 site.json，可能不存在）
 let currentLanguage = "全部"; // 当前选中的语言筛选
 let sortArtist = false;      // 是否按歌手名排序
+let toastTimer = null;       // 复制提示计时器
 
 const listEl = document.getElementById("songList");
 const filterEl = document.getElementById("languageFilter");
@@ -10,6 +11,7 @@ const searchEl = document.getElementById("searchInput");
 const emptyEl = document.getElementById("emptyTip");
 const countEl = document.getElementById("countInfo");
 const sortBtn = document.getElementById("sortArtistBtn");
+const toastEl = document.getElementById("toast");
 
 /* ================= 启动 ================= */
 init();
@@ -40,7 +42,7 @@ function applySiteConfig() {
     document.getElementById("siteSubtitle").textContent = site.subtitle;
   }
 
-  // 背景
+  // 背景（深色底 + 星空图：cover + 分端点 background-position 自适应见 style.css）
   const bg = site.background || {};
   const body = document.body;
   const imgEl = document.getElementById("bgImage");
@@ -70,6 +72,36 @@ function bindEvents() {
     sortBtn.textContent = sortArtist ? "恢复原顺序" : "按歌手名排序";
     render();
   });
+}
+
+/* ================= 点击复制歌名 ================= */
+function copyText(text) {
+  const done = () => showToast(`已复制《${text}》`);
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(done).catch(() => fallbackCopy(text, done));
+  } else {
+    fallbackCopy(text, done);
+  }
+}
+
+function fallbackCopy(text, done) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.cssText = "position:fixed;opacity:0;top:0;left:0";
+  document.body.appendChild(ta);
+  ta.select();
+  try {
+    document.execCommand("copy");
+    done();
+  } catch (e) { /* 复制失败时静默 */ }
+  ta.remove();
+}
+
+function showToast(msg) {
+  toastEl.textContent = msg;
+  toastEl.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1600);
 }
 
 /* ================= 生成语言筛选按钮 ================= */
@@ -119,6 +151,8 @@ function render() {
   result.forEach((song, i) => {
     const li = document.createElement("li");
     li.className = "song-item";
+    li.title = "点击复制歌名";
+    li.addEventListener("click", () => copyText(song.title || ""));
 
     const index = document.createElement("span");
     index.className = "song-index";
@@ -127,6 +161,7 @@ function render() {
     const info = document.createElement("div");
     info.className = "song-info";
 
+    // 歌名 + 中文译名 + 歌手 同一行（紧凑模式）
     const titleDiv = document.createElement("div");
     titleDiv.className = "song-title";
     titleDiv.textContent = song.title || "未知歌名";
@@ -136,12 +171,13 @@ function render() {
       zh.textContent = song.titleZh;
       titleDiv.appendChild(zh);
     }
+    if (song.artist) {
+      const ar = document.createElement("span");
+      ar.className = "song-artist-inline";
+      ar.textContent = song.artist;
+      titleDiv.appendChild(ar);
+    }
     info.appendChild(titleDiv);
-
-    const artistDiv = document.createElement("div");
-    artistDiv.className = "song-artist";
-    artistDiv.textContent = song.artist || "未知歌手";
-    info.appendChild(artistDiv);
 
     if (song.note) {
       const noteDiv = document.createElement("div");
@@ -167,6 +203,7 @@ function render() {
       a.target = "_blank";
       a.rel = "noopener";
       a.textContent = "▶ 收听";
+      a.addEventListener("click", e => e.stopPropagation()); // 点链接不触发复制
       li.appendChild(a);
     }
 
