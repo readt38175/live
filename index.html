@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>芙芙的歌单</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -22,7 +23,7 @@
       <p class="subtitle" id="siteSubtitle">轻点歌名即可复制</p>
     </header>
 
-    <!-- 筛选栏：类型 / 语种 / 付费（下拉，仿参考图） -->
+    <!-- 筛选栏：类型 / 语种 / 付费（下拉） -->
     <div class="filter-bar">
       <label class="filter-select">
         <span class="fs-label">类型</span>
@@ -45,12 +46,15 @@
     <!-- 搜索框 -->
     <div class="search-box">
       <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="请输入内容" aria-label="搜索">
+      <input type="text" id="searchInput" placeholder="搜索歌名、中文译名或歌手…" aria-label="搜索">
     </div>
 
-    <!-- 工具栏：排序按钮 -->
+    <!-- 工具栏：排序 / 随机一首 -->
     <div class="toolbar">
-      <button id="sortArtistBtn" class="sort-btn" type="button">按歌手名排序</button>
+      <div class="toolbar-left">
+        <button id="sortArtistBtn" class="tool-btn" type="button">按歌手名排序</button>
+        <button id="randomBtn" class="tool-btn tool-btn-accent" type="button">🎲 随机一首</button>
+      </div>
       <span id="countInfo" class="count-info"></span>
     </div>
 
@@ -75,10 +79,6 @@
     </div>
 
     <p class="empty-tip" id="emptyTip" hidden>没有找到匹配的歌曲 🎶</p>
-
-    <footer class="footer">
-      <a href="upload.html" class="admin-link">管理页入口</a>
-    </footer>
   </div>
 
   <!-- 复制成功提示 -->

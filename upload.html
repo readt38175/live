@@ -3,548 +3,595 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>歌单管理页</title>
+  <title>歌单更新 - 芙芙的歌单</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/package/dist/xlsx.full.min.js"></script>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
-      --primary: #3b82f6; --primary-dark: #2563eb;
-      --bg: #0b0d12; --card: #151823;
+      --primary: #7ce3cf; --primary-dim: rgba(124,227,207,.14);
+      --accent: #f2a0b4; --accent-dim: rgba(242,160,180,.16);
+      --bg: #0b0d12; --card: #151823; --card-hover: #1a1e2c;
       --text: #e8eaf0; --muted: #9aa1b2; --border: #262b3a;
-      --danger: #ef4444; --ok: #10b981;
     }
+    html { color-scheme: dark; }
     body {
       font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: var(--bg); color: var(--text); min-height: 100vh;
-      display: flex; justify-content: center; padding: 32px 16px;
+      background: var(--bg); color: var(--text); min-height: 100vh; padding: 32px 16px 60px;
+    }
+    .wrap { max-width: 760px; margin: 0 auto; }
+    h1 {
+      text-align: center; font-size: 24px; margin-bottom: 24px; letter-spacing: 1px;
+      background: linear-gradient(120deg, var(--primary), #fff 55%, var(--accent));
+      -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
     }
     .card {
-      width: 100%; max-width: 680px;
       background: var(--card); border: 1px solid var(--border);
-      border-radius: 14px; padding: 28px 24px; box-shadow: 0 10px 40px rgba(0,0,0,.4);
+      border-radius: 14px; padding: 22px 20px; margin-bottom: 16px;
     }
-    h1 { font-size: 22px; margin-bottom: 4px; }
-    h2 { font-size: 16px; margin: 24px 0 8px; padding-top: 16px; border-top: 1px dashed var(--border); }
-    .desc { font-size: 13px; color: var(--muted); margin-bottom: 8px; line-height: 1.6; }
-    label { display: block; font-size: 14px; font-weight: 600; margin: 14px 0 6px; }
-    input[type="password"], input[type="text"], input[type="url"], textarea, select {
-      width: 100%; padding: 10px 12px; font-size: 14px;
-      border: 1px solid var(--border); border-radius: 8px; outline: none;
-      font-family: inherit; background: var(--card); color: var(--text);
+    .steps {
+      background: rgba(124,227,207,.06); border: 1px solid rgba(124,227,207,.25);
+      border-radius: 12px; padding: 14px 18px; margin-bottom: 18px;
+      font-size: 13.5px; line-height: 2; color: var(--text);
     }
-    textarea { min-height: 180px; resize: vertical; font-family: Consolas, monospace; font-size: 13px; }
-    input:focus, textarea:focus, select:focus { border-color: var(--primary); }
-    input[type="color"] { width: 48px; height: 36px; padding: 2px; border: 1px solid var(--border); border-radius: 8px; cursor: pointer; vertical-align: middle; }
-    input[type="range"] { width: 160px; vertical-align: middle; }
-    .row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; align-items: center; }
-    button {
-      padding: 10px 18px; font-size: 14px; border: none;
-      border-radius: 8px; cursor: pointer; transition: 0.2s;
+    .steps b { color: var(--primary); }
+    label.lbl { display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+    .hint { font-size: 12.5px; color: var(--muted); margin-top: 6px; line-height: 1.6; }
+    input[type=text], input[type=password], textarea, select {
+      width: 100%; padding: 11px 14px; font-size: 14px; font-family: inherit;
+      border: 1px solid var(--border); border-radius: 10px; outline: none;
+      background: var(--bg); color: var(--text); transition: border-color .2s, box-shadow .2s;
     }
-    .btn-main { background: var(--primary); color: #fff; }
-    .btn-main:hover { background: var(--primary-dark); }
-    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text); text-decoration: none; display: inline-flex; align-items: center; }
-    .btn-ghost:hover { border-color: var(--primary); color: var(--primary); }
-    button:disabled { opacity: 0.45; cursor: not-allowed; }
-    .msg { margin-top: 12px; font-size: 13px; display: none; padding: 10px 12px; border-radius: 8px; line-height: 1.5; }
-    .msg.ok { display: block; background: rgba(16,185,129,.1); color: var(--ok); }
-    .msg.err { display: block; background: rgba(239,68,68,.1); color: var(--danger); }
-    .hint { font-size: 12px; color: var(--muted); margin-top: 6px; line-height: 1.6; }
-    .radio-row { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 8px; font-size: 14px; }
-    .radio-row label { display: inline-flex; align-items: center; gap: 6px; font-weight: 400; margin: 0; cursor: pointer; }
-    .preview-name { font-size: 24px; font-weight: 700; text-align: center; margin: 14px 0 4px; }
-    .preview-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 6px; }
+    input:focus, textarea:focus, select:focus {
+      border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-dim);
+    }
+    textarea { resize: vertical; min-height: 160px; line-height: 1.6; }
+    .key-row { position: relative; }
+    .key-row input { padding-right: 76px; }
+    .eye {
+      position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+      background: none; border: none; color: var(--muted); cursor: pointer; font-size: 13px;
+    }
+    .tabs { display: flex; border-radius: 10px; overflow: hidden; border: 1px solid var(--border); margin: 16px 0; }
+    .tab {
+      flex: 1; padding: 12px 0; text-align: center; font-size: 14.5px; font-weight: 600;
+      background: var(--bg); color: var(--muted); cursor: pointer; border: none; transition: all .2s;
+    }
+    .tab.active { background: var(--primary); color: #0b0d12; }
+    .btn {
+      display: inline-block; padding: 11px 22px; font-size: 14px; font-weight: 600;
+      border: none; border-radius: 10px; cursor: pointer; transition: all .2s; font-family: inherit;
+    }
+    .btn:disabled { opacity: .45; cursor: not-allowed; }
+    .btn-primary { background: var(--primary); color: #0b0d12; }
+    .btn-primary:hover:not(:disabled) { filter: brightness(1.1); }
+    .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--muted); }
+    .btn-ghost:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+    .btn-accent { background: var(--accent); color: #0b0d12; }
+    .btn-accent:hover:not(:disabled) { filter: brightness(1.08); }
+    .file-btn { background: var(--accent); color: #0b0d12; }
+    #preview {
+      min-height: 150px; max-height: 320px; overflow: auto; font-size: 13px;
+      line-height: 1.8; color: var(--muted); white-space: pre-wrap; word-break: break-all;
+    }
+    #preview.ok { color: var(--text); }
+    #preview.err { color: #ff8f8f; }
+    .radio-row { display: flex; gap: 22px; margin: 12px 0; font-size: 13.5px; color: var(--muted); }
+    .radio-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .radio-row input { accent-color: var(--primary); }
+    details { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 14px; background: var(--card); }
+    summary {
+      padding: 14px 18px; cursor: pointer; font-size: 14.5px; font-weight: 600;
+      color: var(--muted); list-style: none; user-select: none;
+    }
+    summary::before { content: "▸ "; color: var(--primary); }
+    details[open] summary { color: var(--text); border-bottom: 1px solid var(--border); }
+    details .inner { padding: 16px 18px; }
+    .field { margin-bottom: 12px; }
+    .msg { margin-top: 10px; font-size: 13.5px; min-height: 20px; }
+    .msg.ok { color: var(--primary); }
+    .msg.err { color: #ff8f8f; }
+    .push-bar { display: flex; gap: 12px; margin-top: 4px; }
+    .push-bar .btn { flex: 1; padding: 13px 0; }
+    .check-row { display: flex; gap: 22px; font-size: 13.5px; color: var(--muted); margin: 10px 0; }
+    .check-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
+    .check-row input { accent-color: var(--primary); }
     .bg-preview {
-      border: 1px solid var(--border); border-radius: 10px; height: 110px;
-      margin-top: 10px; position: relative; overflow: hidden;
-      background: var(--bg);
+      height: 120px; border-radius: 10px; border: 1px solid var(--border);
+      background-size: cover; background-position: center; margin-top: 10px;
+      display: flex; align-items: flex-end; padding: 10px 14px; color: #fff;
+      font-size: 15px; font-weight: 600; text-shadow: 0 1px 6px rgba(0,0,0,.8);
     }
-    .bg-preview .fake-card {
-      position: absolute; left: 12px; right: 12px; bottom: 12px;
-      background: rgba(21,24,35,0.9); border: 1px solid var(--border);
-      border-radius: 8px; padding: 8px 12px; font-size: 13px;
-    }
-    .lock { text-align: center; padding: 40px 0; }
-    .lock p { color: var(--muted); font-size: 14px; margin: 8px 0 16px; }
-    a.btn-ghost { padding: 10px 18px; font-size: 14px; border-radius: 8px; }
+    .overlay-row { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+    .overlay-row input[type=range] { flex: 1; accent-color: var(--primary); }
+    .foot { text-align: center; margin-top: 22px; font-size: 12.5px; color: var(--muted); }
   </style>
 </head>
 <body>
+<div class="wrap">
+  <h1>歌单更新</h1>
+
+  <div class="steps">
+    <b>操作步骤：</b><br>
+    1. 填入你的个人密钥<br>
+    2. 选择导入方式（Excel表格 或 粘贴JSON，二选一）<br>
+    3. 数据会自动转换成预览<br>
+    4. 确认内容无误，点击提交同步线上歌单与更新日期
+  </div>
+
   <div class="card">
-    <!-- 密码锁定界面 -->
-    <div id="lockView" class="lock">
-      <h1>🔒 管理页</h1>
-      <p>请输入管理密码后继续</p>
-      <input type="password" id="pwdInput" placeholder="管理密码">
-      <div class="row" style="justify-content:center">
-        <button class="btn-main" id="unlockBtn">解锁</button>
-      </div>
-      <div class="msg" id="lockMsg"></div>
+    <label class="lbl">个人密钥</label>
+    <div class="key-row">
+      <input type="password" id="keyInput" placeholder="粘贴你的密钥" autocomplete="off">
+      <button class="eye" id="eyeBtn" type="button">显示</button>
+    </div>
+    <p class="hint">密钥需要拥有修改这个歌单网站的权限，仅自己使用，不要发给外人。</p>
+
+    <div class="tabs">
+      <button class="tab active" id="tabExcel" type="button">Excel上传</button>
+      <button class="tab" id="tabJson" type="button">粘贴JSON</button>
     </div>
 
-    <!-- 解锁后的管理界面 -->
-    <div id="adminView" style="display:none">
-      <h1>🎵 歌单管理</h1>
-      <p class="desc">各部分独立保存：修改后下载对应的 json 文件上传回 GitHub 仓库（或用底部一键推送），网站即自动更新。</p>
+    <!-- Excel 上传 -->
+    <div id="paneExcel">
+      <button class="btn file-btn" id="pickExcel" type="button">选择Excel文件</button>
+      <input type="file" id="excelFile" accept=".xlsx,.xls" hidden>
+      <p class="hint" id="excelHint">支持 .xlsx 文件，表头需包含：歌名、歌手（可选列：类型 / 语言 / 是否付费 / 付费礼物 / 备注 / 歌名(中文)）。</p>
+    </div>
 
-      <!-- ① 网站名称 -->
-      <h2>① 网站名称</h2>
-      <label for="siteNameInput">网站名称（浏览器标签 & 页面大标题）</label>
-      <input type="text" id="siteNameInput" placeholder="例如：我的深夜歌单">
-      <label for="subtitleInput">副标题</label>
-      <input type="text" id="subtitleInput" placeholder="例如：好听的歌都在这里">
-      <div class="row">
-        <button class="btn-main" id="saveNameBtn">保存名称设置</button>
-        <button class="btn-ghost" id="downloadSiteBtn" disabled>下载 site.json</button>
+    <!-- 粘贴 JSON -->
+    <div id="paneJson" hidden>
+      <label class="lbl">粘贴 JSON 歌单数据（歌曲对象数组）</label>
+      <textarea id="jsonInput" placeholder='格式示例：[{"title":"歌名","artist":"歌手","type":"JPOP","language":"日文","paid":"否","gift":"","note":"备注"}]&#10;也支持直接粘贴从 Excel 复制的表格文本（Tab 分隔，首行表头）'></textarea>
+      <div style="margin-top:12px">
+        <button class="btn btn-accent" id="parseJsonBtn" type="button">导入JSON</button>
       </div>
-      <div class="msg" id="nameMsg"></div>
-      <div class="preview-name" id="previewName">🎵 我的歌单</div>
-      <div class="preview-sub" id="previewSub">好听的歌都在这里</div>
+    </div>
 
-      <!-- ② 背景管理 -->
-      <h2>② 背景管理</h2>
-      <div class="radio-row" id="bgTypeRow">
-        <label><input type="radio" name="bgType" value="default" checked> 默认浅灰</label>
-        <label><input type="radio" name="bgType" value="color"> 纯色背景</label>
-        <label><input type="radio" name="bgType" value="image"> 图片背景</label>
-      </div>
+    <!-- 导入模式 -->
+    <div class="radio-row">
+      <label><input type="radio" name="dataMode" value="replace" checked> 整体替换（覆盖全部歌曲）</label>
+      <label><input type="radio" name="dataMode" value="append"> 追加新增（自动跳过重复）</label>
+    </div>
 
-      <div id="bgColorBox" style="display:none">
-        <label>背景颜色</label>
-        <div class="row" style="margin-top:0">
-          <input type="color" id="bgColorInput" value="#0b0d12">
-          <span class="hint" id="bgColorText">#0b0d12</span>
-        </div>
-      </div>
-
-      <div id="bgImageBox" style="display:none">
-        <label>背景图片</label>
-        <input type="url" id="bgImageUrl" placeholder="粘贴图片 URL（https://…）">
-        <div class="row" style="margin-top:8px">
-          <input type="file" id="bgImageFile" accept="image/*" style="font-size:13px">
-        </div>
-        <p class="hint">两种方式任选其一：网络图片直接填 URL；本地图选文件后自动转成 base64 内嵌（大图会让 site.json 变大，建议先压缩到 500KB 以内）。</p>
-        <label>蒙层浓度（数值越大，文字越清晰）<span id="overlayText">0.35</span></label>
-        <input type="range" id="bgOverlayInput" min="0" max="0.9" step="0.05" value="0.35">
-      </div>
-
-      <div class="bg-preview" id="bgPreview">
-        <div class="fake-card">🎵 背景效果预览（歌曲卡片会浮在背景上）</div>
-      </div>
-
-      <div class="row">
-        <button class="btn-main" id="saveBgBtn">保存背景设置</button>
-        <button class="btn-ghost" id="downloadSite2Btn" disabled>下载 site.json</button>
-      </div>
-      <div class="msg" id="bgMsg"></div>
-
-      <!-- ③ 歌单数据 -->
-      <h2>③ 歌单数据</h2>
-      <p class="desc">把新的歌单数据粘贴到下面（支持 JSON 或从 Excel 复制的表格文本），点「预览校验」，没问题再下载 songs.json。</p>
-      <div class="radio-row" style="margin:10px 0 4px">
-        <label><input type="radio" name="dataMode" value="replace" checked> 整体替换（覆盖全部歌曲）</label>
-        <label><input type="radio" name="dataMode" value="append"> 追加新增（合并到现有歌单，自动跳过重复）</label>
-      </div>
-      <label for="dataInput">歌单数据（JSON 数组，或 Excel 复制的制表符分隔文本）</label>
-      <textarea id="dataInput" placeholder='方式一 JSON：
-[{"title":"夜に駆ける","artist":"YOASOBI","language":"JPOP","titleZh":"向夜晚奔去","note":"","link":""}]
-
-方式二 Excel 复制后直接粘贴（首行为表头：序号 类型 歌手 歌名 歌名中文 备注）'></textarea>
-      <div class="row">
-        <button class="btn-main" id="previewBtn">预览校验</button>
-        <button class="btn-ghost" id="downloadBtn" disabled>下载 songs.json</button>
-        <a class="btn-ghost" href="index.html">返回歌单页</a>
-      </div>
-      <div class="msg" id="adminMsg"></div>
-
-      <!-- GitHub 推送 -->
-      <h2>一键推送到 GitHub</h2>
-      <p class="hint">填写仓库信息和个人访问令牌（Token，需 repo 权限）。可勾选要更新哪些文件，只推送勾选的，不用整体更新。Token 只在本地使用，不会保存。</p>
-      <div class="radio-row" style="margin:10px 0">
-        <label><input type="checkbox" id="pushSongs" checked> 推送 songs.json（歌单数据）</label>
-        <label><input type="checkbox" id="pushSite" checked> 推送 site.json（名称/背景）</label>
-      </div>
-      <input type="text" id="ghRepo" placeholder="用户名/仓库名，例如 myname/songlist" style="margin-top:8px">
-      <input type="password" id="ghToken" placeholder="GitHub 个人访问令牌 Token" style="margin-top:8px">
-      <div class="row">
-        <button class="btn-main" id="pushBtn" disabled>推送更新</button>
-      </div>
-      <div class="msg" id="ghMsg"></div>
+    <label class="lbl">转换结果预览 <span style="font-weight:400;color:var(--muted);font-size:12.5px">（长内容可上下滑动）</span></label>
+    <div class="card" style="background:var(--bg);padding:14px 16px;margin-bottom:0">
+      <div id="preview">导入表格或JSON后，数据会显示在这里</div>
     </div>
   </div>
 
-  <script>
-    /* ================= 配置 ================= */
-    const ADMIN_PASSWORD = "123456"; // 管理密码，上线前请修改！
-    const BRANCH = "main";           // 仓库分支名，按实际情况修改
+  <!-- GitHub 推送设置 -->
+  <details id="ghCard">
+    <summary>GitHub 推送设置（部署仓库）</summary>
+    <div class="inner">
+      <div class="field">
+        <label class="lbl">仓库名</label>
+        <input type="text" id="ghRepo" placeholder="用户名/仓库名，如 fufu/songlist">
+      </div>
+      <div class="field">
+        <label class="lbl">个人访问令牌（Token）</label>
+        <input type="password" id="ghToken" placeholder="ghp_... （需 repo 权限）" autocomplete="off">
+        <p class="hint">Token 只在本地使用，不会保存。获取：GitHub → Settings → Developer settings → Personal access tokens。</p>
+      </div>
+      <div class="field">
+        <label class="lbl">分支</label>
+        <input type="text" id="ghBranch" value="main">
+      </div>
+      <div class="check-row">
+        <label><input type="checkbox" id="pushSongs" checked> 推送 songs.json（歌单数据）</label>
+        <label><input type="checkbox" id="pushSite"> 推送 site.json（名称/背景）</label>
+      </div>
+      <p class="msg" id="ghMsg"></p>
+    </div>
+  </details>
 
-    let validSongs = null;   // 校验通过的歌单数据
-    let siteConfig = {       // 站点配置（名称 + 背景）
-      siteName: "我的歌单",
-      subtitle: "好听的歌都在这里",
-      background: { type: "default", color: "#0b0d12", image: "", overlay: 0.35 }
-    };
+  <!-- 网站设置 -->
+  <details id="siteCard">
+    <summary>网站设置（名称 / 背景）</summary>
+    <div class="inner">
+      <div class="field">
+        <label class="lbl">站点名称</label>
+        <input type="text" id="siteNameInput" placeholder="芙芙的歌单">
+      </div>
+      <div class="field">
+        <label class="lbl">副标题</label>
+        <input type="text" id="subtitleInput" placeholder="轻点歌名即可复制">
+      </div>
+      <div class="field">
+        <label class="lbl">背景类型</label>
+        <select id="bgType">
+          <option value="image">图片背景（当前：星空）</option>
+          <option value="color">纯色背景</option>
+          <option value="default">默认深色</option>
+        </select>
+      </div>
+      <div class="field" id="colorField" hidden>
+        <label class="lbl">背景颜色</label>
+        <input type="text" id="bgColorInput" value="#0b0d12">
+      </div>
+      <div class="field" id="imageField">
+        <label class="lbl">背景图片 URL</label>
+        <input type="text" id="bgImageInput" placeholder="https://...">
+      </div>
+      <div class="field overlay-row">
+        <span>蒙层浓度</span>
+        <input type="range" id="bgOverlayInput" min="0" max="0.9" step="0.05" value="0.3">
+        <span id="overlayVal">0.3</span>
+      </div>
+      <div class="bg-preview" id="bgPreview"><span id="bgPreviewName">预览</span></div>
+      <p class="hint">改动会实时预览；勾选「推送 site.json」后随推送一起生效。</p>
+    </div>
+  </details>
 
-    /* ================= 解锁逻辑 ================= */
-    const lockView = document.getElementById("lockView");
-    const adminView = document.getElementById("adminView");
+  <div class="card">
+    <div class="push-bar">
+      <button class="btn btn-ghost" id="downloadBtn" type="button" disabled>下载 songs.json</button>
+      <button class="btn btn-primary" id="pushBtn" type="button" disabled>推送更新</button>
+    </div>
+    <p class="msg" id="pushMsg"></p>
+  </div>
 
-    function tryUnlock() {
-      const pwd = document.getElementById("pwdInput").value;
-      const msg = document.getElementById("lockMsg");
-      if (pwd === ADMIN_PASSWORD) {
-        lockView.style.display = "none";
-        adminView.style.display = "block";
-        loadCurrentSite(); // 解锁后拉取当前线上配置回填
-      } else {
-        msg.className = "msg err";
-        msg.textContent = "密码错误，请重试";
-      }
-    }
-    document.getElementById("unlockBtn").addEventListener("click", tryUnlock);
-    document.getElementById("pwdInput").addEventListener("keydown", e => {
-      if (e.key === "Enter") tryUnlock();
+  <p class="foot">芙芙的歌单 · 管理页</p>
+</div>
+
+<script>
+/* ================= 配置 ================= */
+const ADMIN_KEY = "fufu-wGe9J9p9";   // 管理密钥（修改请同步告知使用者）
+
+/* ================= 元素 ================= */
+const $ = id => document.getElementById(id);
+const keyInput = $("keyInput"), eyeBtn = $("eyeBtn");
+const tabExcel = $("tabExcel"), tabJson = $("tabJson");
+const paneExcel = $("paneExcel"), paneJson = $("paneJson");
+const preview = $("preview");
+const parseJsonBtn = $("parseJsonBtn"), pickExcel = $("pickExcel"), excelFile = $("excelFile");
+const downloadBtn = $("downloadBtn"), pushBtn = $("pushBtn");
+const ghMsg = $("ghMsg"), pushMsg = $("pushMsg");
+
+let siteConfig = { siteName: "", subtitle: "", background: {} };
+let validSongs = null;      // 校验通过的歌单数据
+let keyOk = false;
+
+/* ================= 密钥 ================= */
+function checkKey() {
+  keyOk = keyInput.value.trim() === ADMIN_KEY;
+  downloadBtn.disabled = !keyOk || !validSongs;
+  pushBtn.disabled = !keyOk;
+  if (keyOk && validSongs) pushMsg.textContent = "";
+  return keyOk;
+}
+keyInput.addEventListener("input", () => {
+  checkKey();
+  if (keyOk) pushMsg.className = "msg ok", pushMsg.textContent = "密钥正确 ✔";
+  else if (keyInput.value.trim()) { pushMsg.className = "msg err"; pushMsg.textContent = "密钥不正确"; }
+  else pushMsg.textContent = "";
+});
+eyeBtn.addEventListener("click", () => {
+  const show = keyInput.type === "password";
+  keyInput.type = show ? "text" : "password";
+  eyeBtn.textContent = show ? "隐藏" : "显示";
+});
+
+/* ================= 标签页切换 ================= */
+tabExcel.addEventListener("click", () => switchTab(true));
+tabJson.addEventListener("click", () => switchTab(false));
+function switchTab(excel) {
+  tabExcel.classList.toggle("active", excel);
+  tabJson.classList.toggle("active", !excel);
+  paneExcel.hidden = !excel;
+  paneJson.hidden = excel;
+}
+
+/* ================= 数据解析 ================= */
+function normalize(s) {
+  const strip = v => String(v || "").trim().replace(/^[（(](.*)[)）]$/, "$1").trim();
+  const paid = String(s.paid || "").trim();
+  return {
+    title: String(s.title || "").trim(),
+    titleZh: strip(s.titleZh),
+    artist: String(s.artist || "").trim(),
+    type: String(s.type || "").trim(),
+    language: String(s.language || "").trim(),
+    paid: paid === "是" ? "是" : "否",
+    gift: String(s.gift || "").trim(),
+    note: String(s.note || "").trim(),
+    link: String(s.link || "").trim()
+  };
+}
+
+function parseTableText(raw) {
+  const lines = raw.trim().split(/\r?\n/).filter(l => l.trim());
+  if (lines.length < 2) throw new Error("表格内容太少，至少要有表头和一行数据");
+  const header = lines[0].split("\t").map(h => h.trim());
+  const col = name => header.findIndex(h => h.includes(name));
+  const cType = col("类型");
+  const cLang = col("语种") !== -1 ? col("语种") : col("语言");
+  const cPaid = col("是否付费");
+  const cGift = col("付费礼物");
+  const cArtist = col("手") !== -1 ? col("手") : col("artist");
+  const cTitle = header.findIndex(h => h.includes("歌名") && !h.includes("中文"));
+  const cTitleZh = col("中文");
+  const cNote = col("备注");
+  if (cTitle === -1 || cArtist === -1) throw new Error("无法识别表头，请保证第一行包含「歌名」和「歌手」列");
+
+  let lastType = "";
+  return lines.slice(1).map(line => {
+    const cells = line.split("\t");
+    const t = cType > -1 ? (cells[cType] || lastType) : "";
+    if (t) lastType = t;
+    let lang = cLang > -1 ? (cells[cLang] || "").trim() : "";
+    if (!lang) lang = (t === "中文") ? "中文" : /^(JPOP|动画|VOCALOID|昭和)/.test(t) ? "日文" : t;
+    return normalize({
+      title: cells[cTitle],
+      titleZh: cTitleZh > -1 ? cells[cTitleZh] : "",
+      artist: cells[cArtist],
+      type: t,
+      language: lang,
+      paid: cPaid > -1 ? cells[cPaid] : "",
+      gift: cGift > -1 ? cells[cGift] : "",
+      note: cNote > -1 ? cells[cNote] : "",
+      link: ""
     });
+  });
+}
 
-    /* ================= 回填当前 site.json（预览用） ================= */
-    async function loadCurrentSite() {
-      try {
-        const res = await fetch("site.json");
-        if (!res.ok) return;
-        const data = await res.json();
-        siteConfig = Object.assign(siteConfig, data);
-        siteConfig.background = Object.assign(
-          { type: "default", color: "#0b0d12", image: "", overlay: 0.35 },
-          data.background || {}
-        );
-        document.getElementById("siteNameInput").value = siteConfig.siteName || "";
-        document.getElementById("subtitleInput").value = siteConfig.subtitle || "";
-        const bg = siteConfig.background;
-        document.querySelector(`input[name="bgType"][value="${bg.type}"]`).checked = true;
-        document.getElementById("bgColorInput").value = bg.color || "#0b0d12";
-        document.getElementById("bgOverlayInput").value = bg.overlay != null ? bg.overlay : 0.35;
-        updateNamePreview();
-        updateBgTypeUI();
-        updateBgPreview();
-      } catch (e) { /* site.json 不存在时静默使用默认值 */ }
-    }
+function parseJsonText(raw) {
+  const data = JSON.parse(raw.trim());
+  const arr = Array.isArray(data) ? data : [data];
+  return arr.map(normalize);
+}
 
-    /* ================= ① 网站名称 ================= */
-    const nameMsg = document.getElementById("nameMsg");
-
-    function updateNamePreview() {
-      const n = document.getElementById("siteNameInput").value.trim() || "我的歌单";
-      const s = document.getElementById("subtitleInput").value.trim();
-      document.getElementById("previewName").textContent = "🎵 " + n;
-      document.getElementById("previewSub").textContent = s || "（未设置副标题）";
-    }
-    document.getElementById("siteNameInput").addEventListener("input", updateNamePreview);
-    document.getElementById("subtitleInput").addEventListener("input", updateNamePreview);
-
-    document.getElementById("saveNameBtn").addEventListener("click", () => {
-      siteConfig.siteName = document.getElementById("siteNameInput").value.trim() || "我的歌单";
-      siteConfig.subtitle = document.getElementById("subtitleInput").value.trim();
-      updateNamePreview();
-      nameMsg.className = "msg ok";
-      nameMsg.textContent = `名称已保存：${siteConfig.siteName}。可下载 site.json 或在底部一键推送。`;
-      document.getElementById("downloadSiteBtn").disabled = false;
-      document.getElementById("downloadSite2Btn").disabled = false;
-      document.getElementById("pushBtn").disabled = false;
-    });
-
-    /* ================= ② 背景管理 ================= */
-    const bgMsg = document.getElementById("bgMsg");
-
-    function currentBgType() {
-      return document.querySelector("input[name=bgType]:checked").value;
-    }
-    function updateBgTypeUI() {
-      const t = currentBgType();
-      document.getElementById("bgColorBox").style.display = t === "color" ? "block" : "none";
-      document.getElementById("bgImageBox").style.display = t === "image" ? "block" : "none";
-    }
-    document.querySelectorAll("input[name=bgType]").forEach(r => {
-      r.addEventListener("change", () => { updateBgTypeUI(); updateBgPreview(); });
-    });
-
-    document.getElementById("bgColorInput").addEventListener("input", e => {
-      document.getElementById("bgColorText").textContent = e.target.value;
-      updateBgPreview();
-    });
-    document.getElementById("bgOverlayInput").addEventListener("input", e => {
-      document.getElementById("overlayText").textContent = e.target.value;
-      updateBgPreview();
-    });
-    document.getElementById("bgImageUrl").addEventListener("input", updateBgPreview);
-
-    // 本地图片 → base64
-    document.getElementById("bgImageFile").addEventListener("change", e => {
-      const file = e.target.files && e.target.files[0];
-      if (!file) return;
-      if (file.size > 2 * 1024 * 1024) {
-        bgMsg.className = "msg err";
-        bgMsg.textContent = "图片超过 2MB，base64 内嵌会让 site.json 非常大，建议压缩后再用。";
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        document.getElementById("bgImageUrl").value = ""; // 二选一
-        siteConfig.background.image = reader.result;
-        updateBgPreview();
-        bgMsg.className = "msg ok";
-        bgMsg.textContent = `本地图已读取（${Math.round(file.size / 1024)}KB），记得点「保存背景设置」。`;
-      };
-      reader.readAsDataURL(file);
-    });
-
-    function resolvedImage() {
-      const url = document.getElementById("bgImageUrl").value.trim();
-      return url || siteConfig.background.image || "";
-    }
-
-    function updateBgPreview() {
-      const box = document.getElementById("bgPreview");
-      const t = currentBgType();
-      if (t === "color") {
-        box.style.background = document.getElementById("bgColorInput").value;
-      } else if (t === "image") {
-        const img = resolvedImage();
-        const o = parseFloat(document.getElementById("bgOverlayInput").value);
-        box.style.background = img
-          ? `linear-gradient(rgba(11,13,18,${o}),rgba(11,13,18,${o})), url("${img}") center/cover`
-          : "var(--bg)";
-      } else {
-        box.style.background = "var(--bg)";
-      }
-    }
-
-    document.getElementById("saveBgBtn").addEventListener("click", () => {
-      const t = currentBgType();
-      siteConfig.background.type = t;
-      siteConfig.background.color = document.getElementById("bgColorInput").value;
-      siteConfig.background.image = t === "image" ? resolvedImage() : "";
-      siteConfig.background.overlay = parseFloat(document.getElementById("bgOverlayInput").value);
-      updateBgPreview();
-      bgMsg.className = "msg ok";
-      bgMsg.textContent = "背景设置已保存。可下载 site.json 或在底部一键推送。";
-      document.getElementById("downloadSiteBtn").disabled = false;
-      document.getElementById("downloadSite2Btn").disabled = false;
-      document.getElementById("pushBtn").disabled = false;
-    });
-
-    /* ================= 下载 site.json ================= */
-    function downloadSite() {
-      const blob = new Blob([JSON.stringify(siteConfig, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "site.json";
-      a.click();
-      URL.revokeObjectURL(a.href);
-    }
-    document.getElementById("downloadSiteBtn").addEventListener("click", downloadSite);
-    document.getElementById("downloadSite2Btn").addEventListener("click", downloadSite);
-
-    /* ================= ③ 歌单数据：解析 ================= */
-    const adminMsg = document.getElementById("adminMsg");
-    const downloadBtn = document.getElementById("downloadBtn");
-
-    function parseInput(raw) {
-      raw = raw.trim();
-      if (!raw) throw new Error("内容为空，请先粘贴数据");
-
-      // 方式一：JSON
-      if (raw.startsWith("[") || raw.startsWith("{")) {
-        const data = JSON.parse(raw);
-        const arr = Array.isArray(data) ? data : [data];
-        return arr.map(normalize);
-      }
-
-      // 方式二：Excel / 表格文本（制表符分隔）
-      const lines = raw.split(/\r?\n/).filter(l => l.trim());
-      const header = lines[0].split("\t").map(h => h.trim());
-      const col = name => header.findIndex(h => h.includes(name));
-      const cType = col("类型");
-      const cLang = col("语种") !== -1 ? col("语种") : col("语言");
-      const cPaid = col("是否付费");
-      const cGift = col("付费礼物");
-      const cArtist = col("手") !== -1 ? col("手") : col("artist");
-      const cTitle = header.findIndex(h => h.includes("歌名") && !h.includes("中文"));
-      const cTitleZh = col("中文");
-      const cNote = col("备注");
-      if (cTitle === -1 || cArtist === -1) {
-        throw new Error("无法识别表头，请保证第一行包含「歌名」和「歌手」列");
-      }
-
-      let lastType = "";
-      return lines.slice(1).map(line => {
-        const cells = line.split("\t");
-        const t = cType > -1 ? (cells[cType] || lastType) : "";
-        if (t) lastType = t;
-        // 语言列缺失时兜底：JPOP/动画/VOCALOID/昭和老歌 -> 日文，中文 -> 中文
-        let lang = cLang > -1 ? (cells[cLang] || "").trim() : "";
-        if (!lang) {
-          lang = (t === "中文") ? "中文"
-            : /^(JPOP|动画|VOCALOID|昭和)/.test(t) ? "日文" : t;
-        }
-        const paid = cPaid > -1 ? (cells[cPaid] || "").trim() : "";
-        return normalize({
-          title: cells[cTitle],
-          titleZh: cTitleZh > -1 ? cells[cTitleZh] : "",
-          artist: cells[cArtist],
-          type: t || (cType === -1 ? (cLang > -1 ? lang : "") : ""),
-          language: lang,
-          paid,
-          gift: cGift > -1 ? cells[cGift] : "",
-          note: cNote > -1 ? cells[cNote] : "",
-          link: ""
-        });
+/* 表头中文列名 -> 字段（SheetJS 用） */
+function rowsToSongs(rows) {
+  if (!rows.length) throw new Error("Excel 内容为空");
+  const header = rows[0].map(h => String(h || "").trim());
+  const col = name => header.findIndex(h => h.includes(name));
+  const idx = {
+    title: header.findIndex(h => h.includes("歌名") && !h.includes("中文")),
+    titleZh: col("中文"),
+    artist: col("手") !== -1 ? col("手") : col("artist"),
+    type: col("类型"),
+    lang: col("语种") !== -1 ? col("语种") : col("语言"),
+    paid: col("是否付费"),
+    gift: col("付费礼物"),
+    note: col("备注")
+  };
+  if (idx.title === -1 || idx.artist === -1) throw new Error("无法识别表头，Excel 第一行需包含「歌名」和「歌手」列");
+  let lastType = "";
+  return rows.slice(1)
+    .map(r => r.map(c => (c == null ? "" : String(c).trim())))
+    .filter(cells => cells.some(c => c))
+    .map(cells => {
+      const t = idx.type > -1 ? (cells[idx.type] || lastType) : "";
+      if (t) lastType = t;
+      let lang = idx.lang > -1 ? (cells[idx.lang] || "") : "";
+      if (!lang) lang = (t === "中文") ? "中文" : /^(JPOP|动画|VOCALOID|昭和)/.test(t) ? "日文" : t;
+      return normalize({
+        title: cells[idx.title],
+        titleZh: idx.titleZh > -1 ? cells[idx.titleZh] : "",
+        artist: cells[idx.artist],
+        type: t,
+        language: lang,
+        paid: idx.paid > -1 ? cells[idx.paid] : "",
+        gift: idx.gift > -1 ? cells[idx.gift] : "",
+        note: idx.note > -1 ? cells[idx.note] : "",
+        link: ""
       });
-    }
-
-    function normalize(s) {
-      const strip = v => String(v || "").trim().replace(/^[（(](.*)[)）]$/, "$1").trim();
-      const paid = String(s.paid || "").trim();
-      return {
-        title: String(s.title || "").trim(),
-        titleZh: strip(s.titleZh),
-        artist: String(s.artist || "").trim(),
-        type: String(s.type || "").trim(),
-        language: String(s.language || "").trim(),
-        paid: paid === "是" ? "是" : "否",
-        gift: String(s.gift || "").trim(),
-        note: String(s.note || "").trim(),
-        link: String(s.link || "").trim()
-      };
-    }
-
-    function currentDataMode() {
-      return document.querySelector("input[name=dataMode]:checked").value;
-    }
-
-    document.getElementById("previewBtn").addEventListener("click", async () => {
-      try {
-        let parsed = parseInput(document.getElementById("dataInput").value);
-        const bad = parsed.filter(s => !s.title || !s.artist);
-        if (bad.length) throw new Error(`有 ${bad.length} 条记录缺少歌名或歌手，请检查`);
-
-        if (currentDataMode() === "append") {
-          // 追加模式：拉取现有 songs.json 合并（重复的按 歌名+歌手 跳过）
-          let existing = [];
-          try {
-            const res = await fetch("songs.json");
-            if (res.ok) existing = await res.json();
-          } catch (e) {
-            throw new Error("读取现有 songs.json 失败（本地双击打开页面时无法读取，请通过网站访问管理页）");
-          }
-          const key = s => (s.title || "") + "||" + (s.artist || "");
-          const seen = new Set(existing.map(key));
-          const fresh = parsed.filter(s => !seen.has(key(s)));
-          validSongs = existing.concat(fresh);
-          adminMsg.className = "msg ok";
-          adminMsg.textContent = `追加完成：现有 ${existing.length} 首 + 新增 ${fresh.length} 首（自动跳过重复 ${parsed.length - fresh.length} 首），合并后共 ${validSongs.length} 首。`;
-        } else {
-          validSongs = parsed;
-          adminMsg.className = "msg ok";
-          adminMsg.textContent = `校验通过，共 ${validSongs.length} 首歌（整体替换）。可以下载 songs.json 或直接推送到 GitHub。`;
-        }
-        downloadBtn.disabled = false;
-        document.getElementById("pushBtn").disabled = false;
-      } catch (e) {
-        validSongs = null;
-        adminMsg.className = "msg err";
-        adminMsg.textContent = "解析失败：" + e.message;
-        downloadBtn.disabled = true;
-      }
     });
+}
 
-    /* ================= 下载 songs.json ================= */
-    downloadBtn.addEventListener("click", () => {
-      if (!validSongs) return;
-      const blob = new Blob([JSON.stringify(validSongs, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = "songs.json";
-      a.click();
-      URL.revokeObjectURL(a.href);
-    });
+/* ================= 预览与校验 ================= */
+async function acceptSongs(parsed, sourceName) {
+  try {
+    const bad = parsed.filter(s => !s.title || !s.artist);
+    if (bad.length) throw new Error(`${sourceName}中有 ${bad.length} 条记录缺少歌名或歌手`);
 
-    /* ================= 一键推送到 GitHub（songs.json + site.json） ================= */
-    const ghMsg = document.getElementById("ghMsg");
-    const pushBtn = document.getElementById("pushBtn");
-
-    async function pushFile(repo, token, path, contentObj) {
-      const content = typeof contentObj === "string"
-        ? contentObj
-        : JSON.stringify(contentObj, null, 2);
-      // 1. 查询现有文件 sha（不存在则新建）
-      let sha = null;
-      const metaRes = await fetch(
-        `https://api.github.com/repos/${repo}/contents/${path}?ref=${BRANCH}`,
-        { headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" } }
-      );
-      if (metaRes.ok) sha = (await metaRes.json()).sha;
-      else if (metaRes.status !== 404) throw new Error(`获取 ${path} 信息失败（HTTP ${metaRes.status}）`);
-
-      // 2. 提交新内容
-      const putRes = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}`, Accept: "application/vnd.github+json" },
-        body: JSON.stringify({
-          message: `update ${path} via upload.html`,
-          content: btoa(unescape(encodeURIComponent(content))),
-          branch: BRANCH,
-          ...(sha ? { sha } : {})
-        })
-      });
-      if (!putRes.ok) throw new Error(`推送 ${path} 失败（HTTP ${putRes.status}）`);
+    const mode = document.querySelector("input[name=dataMode]:checked").value;
+    if (mode === "append") {
+      let existing = [];
+      const res = await fetch("songs.json");
+      if (res.ok) existing = await res.json();
+      const key = s => (s.title || "") + "||" + (s.artist || "");
+      const seen = new Set(existing.map(key));
+      const fresh = parsed.filter(s => !seen.has(key(s)));
+      validSongs = existing.concat(fresh);
+      showPreviewOk(`追加完成：现有 ${existing.length} 首 + 新增 ${fresh.length} 首（跳过重复 ${parsed.length - fresh.length} 首），合并后共 ${validSongs.length} 首。`, validSongs);
+    } else {
+      validSongs = parsed;
+      showPreviewOk(`校验通过：${sourceName}共 ${validSongs.length} 首（整体替换）。`, validSongs);
     }
+    downloadBtn.disabled = !keyOk;
+    pushBtn.disabled = !keyOk;
+    if (!keyOk) pushMsg.className = "msg err", pushMsg.textContent = "数据已就绪，请先在上方填写正确的个人密钥";
+  } catch (e) {
+    validSongs = null;
+    preview.className = "err";
+    preview.textContent = "❌ " + e.message;
+    downloadBtn.disabled = true;
+    pushBtn.disabled = true;
+  }
+}
 
-    // 推送前把界面上的名称/背景设置同步进 siteConfig（不必先点保存）
-    function syncSiteFromUI() {
-      const n = document.getElementById("siteNameInput").value.trim();
-      const sub = document.getElementById("subtitleInput").value.trim();
-      if (n) siteConfig.siteName = n;
-      if (sub) siteConfig.subtitle = sub;
-      const t = currentBgType();
-      siteConfig.background.type = t;
-      siteConfig.background.color = document.getElementById("bgColorInput").value;
-      siteConfig.background.image = t === "image" ? resolvedImage() : "";
-      siteConfig.background.overlay = parseFloat(document.getElementById("bgOverlayInput").value);
-    }
+function showPreviewOk(msg, songs) {
+  preview.className = "ok";
+  const lines = songs.slice(0, 25).map((s, i) =>
+    `${i + 1}. ${s.title}${s.titleZh ? "（" + s.titleZh + "）" : ""} - ${s.artist} [${s.type || "?"}/${s.language || "?"}]${s.paid === "是" ? " 💰" : ""}${s.note ? " · " + s.note : ""}`);
+  preview.textContent = `✅ ${msg}\n\n` + lines.join("\n") +
+    (songs.length > 25 ? `\n…（其余 ${songs.length - 25} 首略）` : "");
+}
 
-    pushBtn.addEventListener("click", async () => {
-      ghMsg.className = "msg err";
-      const repo = document.getElementById("ghRepo").value.trim();
-      const token = document.getElementById("ghToken").value.trim();
-      if (!repo || !token) { ghMsg.textContent = "请先填写仓库名和 Token"; return; }
+/* ================= Excel 上传 ================= */
+pickExcel.addEventListener("click", () => excelFile.click());
+excelFile.addEventListener("change", async () => {
+  const file = excelFile.files[0];
+  if (!file) return;
+  if (typeof XLSX === "undefined") {
+    preview.className = "err";
+    preview.textContent = "❌ Excel 解析组件加载失败（网络问题）。请改为在 Excel 中全选复制表格内容，用「粘贴JSON」标签粘贴（支持表格文本）。";
+    return;
+  }
+  try {
+    const buf = await file.arrayBuffer();
+    const wb = XLSX.read(buf, { type: "array" });
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, defval: "" });
+    await acceptSongs(rowsToSongs(rows), `Excel「${file.name}」`);
+  } catch (e) {
+    validSongs = null;
+    preview.className = "err";
+    preview.textContent = "❌ Excel 解析失败：" + e.message;
+  }
+  excelFile.value = "";
+});
 
-      const pushSongs = document.getElementById("pushSongs").checked;
-      const pushSite = document.getElementById("pushSite").checked;
-      if (!pushSongs && !pushSite) { ghMsg.textContent = "请至少勾选一个要推送的文件"; return; }
-      if (pushSongs && !validSongs) {
-        ghMsg.textContent = "勾选了推送 songs.json，请先在「③ 歌单数据」里粘贴并预览校验";
-        return;
-      }
+/* ================= JSON / 表格粘贴 ================= */
+parseJsonBtn.addEventListener("click", async () => {
+  const raw = $("jsonInput").value;
+  if (!raw.trim()) { preview.className = "err"; preview.textContent = "❌ 内容为空，请先粘贴数据"; return; }
+  try {
+    const parsed = raw.trim().startsWith("[") || raw.trim().startsWith("{")
+      ? parseJsonText(raw) : parseTableText(raw);
+    await acceptSongs(parsed, "粘贴的数据");
+  } catch (e) {
+    validSongs = null;
+    preview.className = "err";
+    preview.textContent = "❌ 解析失败：" + e.message;
+  }
+});
 
-      const targets = [];
-      if (pushSongs) targets.push("songs.json");
-      if (pushSite) targets.push("site.json");
+/* ================= 下载 ================= */
+downloadBtn.addEventListener("click", () => {
+  if (!checkKey() || !validSongs) return;
+  const blob = new Blob([JSON.stringify(validSongs, null, 1)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "songs.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
 
-      pushBtn.disabled = true;
-      pushBtn.textContent = "推送中…";
-      try {
-        if (pushSite) syncSiteFromUI();
-        for (const t of targets) {
-          await pushFile(repo, token, t, t === "songs.json" ? validSongs : siteConfig);
-        }
-        ghMsg.className = "msg ok";
-        ghMsg.textContent = `推送成功（${targets.join(" + ")}）！等待约 1 分钟，网站会自动更新。`;
-      } catch (e) {
-        ghMsg.className = "msg err";
-        ghMsg.textContent = e.message;
-      } finally {
-        pushBtn.disabled = false;
-        pushBtn.textContent = "推送更新";
-      }
+/* ================= 网站设置 ================= */
+async function loadSiteConfig() {
+  try {
+    const res = await fetch("site.json");
+    if (res.ok) siteConfig = await res.json();
+  } catch (e) { /* 忽略 */ }
+  if (!siteConfig.background) siteConfig.background = {};
+  $("siteNameInput").value = siteConfig.siteName || "";
+  $("subtitleInput").value = siteConfig.subtitle || "";
+  const bg = siteConfig.background;
+  $("bgType").value = bg.type || "image";
+  $("bgColorInput").value = bg.color || "#0b0d12";
+  $("bgImageInput").value = (bg.image || "").startsWith("data:") ? "" : (bg.image || "");
+  $("bgOverlayInput").value = bg.overlay != null ? bg.overlay : 0.3;
+  syncBgFields();
+  updateBgPreview();
+}
+function syncBgFields() {
+  const t = $("bgType").value;
+  $("colorField").hidden = t !== "color";
+  $("imageField").hidden = t !== "image";
+}
+function resolvedImage() {
+  return $("bgImageInput").value.trim();
+}
+function updateBgPreview() {
+  const t = $("bgType").value;
+  const el = $("bgPreview");
+  if (t === "color") el.style.background = $("bgColorInput").value;
+  else if (t === "image" && resolvedImage()) el.style.background = `url("${resolvedImage()}") center/cover`;
+  else el.style.background = "#0b0d12";
+  $("bgPreviewName").textContent = ($("siteNameInput").value || "站点名称") ;
+}
+["bgType", "bgColorInput", "bgImageInput"].forEach(id =>
+  $(id).addEventListener("input", () => { syncBgFields(); updateBgPreview(); }));
+$("bgOverlayInput").addEventListener("input", () => {
+  $("overlayVal").textContent = $("bgOverlayInput").value;
+  updateBgPreview();
+});
+["siteNameInput", "subtitleInput"].forEach(id => $(id).addEventListener("input", updateBgPreview));
+
+function syncSiteFromUI() {
+  const n = $("siteNameInput").value.trim();
+  const sub = $("subtitleInput").value.trim();
+  if (n) siteConfig.siteName = n;
+  if (sub) siteConfig.subtitle = sub;
+  const t = $("bgType").value;
+  siteConfig.background.type = t;
+  siteConfig.background.color = $("bgColorInput").value;
+  siteConfig.background.image = t === "image" ? resolvedImage() : "";
+  siteConfig.background.overlay = parseFloat($("bgOverlayInput").value);
+}
+
+/* ================= GitHub 推送 ================= */
+async function ghApi(url, opts) {
+  const res = await fetch(url, opts);
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(`GitHub API ${res.status}: ${body.message || res.statusText}`);
+  }
+  return res.json();
+}
+
+async function pushFile(repo, token, branch, path, content) {
+  const api = `https://api.github.com/repos/${repo}/contents/${path}`;
+  let sha;
+  try {
+    const data = await ghApi(`${api}?ref=${encodeURIComponent(branch)}`, {
+      headers: { Authorization: `token ${token}` }
     });
-  </script>
+    sha = data.sha;
+  } catch (e) { /* 404 = 文件不存在，直接新建 */ }
+  return ghApi(api, {
+    method: "PUT",
+    headers: { Authorization: `token ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: `update ${path} via admin page`,
+      content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 1)))),
+      branch,
+      sha
+    })
+  });
+}
+
+pushBtn.addEventListener("click", async () => {
+  if (!checkKey()) { pushMsg.className = "msg err"; pushMsg.textContent = "请先填写正确的个人密钥"; return; }
+  const repo = $("ghRepo").value.trim();
+  const token = $("ghToken").value.trim();
+  const branch = $("ghBranch").value.trim() || "main";
+  if (!repo || !token) { pushMsg.className = "msg err"; pushMsg.textContent = "请展开「GitHub 推送设置」填写仓库名和 Token"; return; }
+
+  const pushSongs = $("pushSongs").checked;
+  const pushSite = $("pushSite").checked;
+  if (!pushSongs && !pushSite) { pushMsg.className = "msg err"; pushMsg.textContent = "请至少勾选一个要推送的文件"; return; }
+  if (pushSongs && !validSongs) { pushMsg.className = "msg err"; pushMsg.textContent = "请先导入并校验歌单数据"; return; }
+
+  const targets = [];
+  if (pushSongs) targets.push("songs.json");
+  if (pushSite) targets.push("site.json");
+
+  pushBtn.disabled = true;
+  pushBtn.textContent = "推送中…";
+  pushMsg.className = "msg";
+  pushMsg.textContent = "";
+  try {
+    if (pushSite) syncSiteFromUI();
+    for (const t of targets) {
+      pushMsg.textContent = `正在推送 ${t}…`;
+      await pushFile(repo, token, branch, t, t === "songs.json" ? validSongs : siteConfig);
+    }
+    pushMsg.className = "msg ok";
+    pushMsg.textContent = `推送成功（${targets.join(" + ")}）！约 1 分钟后线上网站自动更新。`;
+  } catch (e) {
+    pushMsg.className = "msg err";
+    pushMsg.textContent = "推送失败：" + e.message;
+  } finally {
+    pushBtn.disabled = false;
+    pushBtn.textContent = "推送更新";
+  }
+});
+
+/* ================= 启动 ================= */
+loadSiteConfig();
+</script>
 </body>
 </html>

@@ -15,7 +15,9 @@ const paidEl = document.getElementById("paidFilter");
 const emptyEl = document.getElementById("emptyTip");
 const countEl = document.getElementById("countInfo");
 const sortBtn = document.getElementById("sortArtistBtn");
+const randomBtn = document.getElementById("randomBtn");
 const toastEl = document.getElementById("toast");
+let lastResult = [];         // 最近一次筛选结果（供「随机一首」使用）
 
 /* ================= 启动 ================= */
 init();
@@ -78,6 +80,23 @@ function bindEvents() {
     sortBtn.classList.toggle("active", sortArtist);
     sortBtn.textContent = sortArtist ? "恢复原顺序" : "按歌手名排序";
     render();
+  });
+
+  // 随机一首：从当前筛选结果里随机选一首，滚动到该行并高亮 + 复制歌名
+  randomBtn.addEventListener("click", () => {
+    if (!lastResult.length) { showToast("没有可选的歌曲"); return; }
+    const pick = lastResult[Math.floor(Math.random() * lastResult.length)];
+    const rows = bodyEl.querySelectorAll(".song-row");
+    rows.forEach(r => r.classList.remove("flash"));
+    // lastResult 与渲染顺序一致，按 data-i 定位
+    const target = bodyEl.querySelector(`.song-row[data-i="${pick.__i}"]`);
+    if (target) {
+      target.classList.add("flash");
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => target.classList.remove("flash"), 2400);
+    }
+    showToast(`🎲 随机到《${pick.title || ""}》`);
+    if (pick.title) copyText(pick.title); // 顺手复制，方便去搜歌
   });
 }
 
@@ -156,11 +175,13 @@ function render() {
   // 3. 渲染表格
   countEl.textContent = `共 ${result.length} 首`;
   emptyEl.hidden = result.length > 0;
+  lastResult = result;
   bodyEl.innerHTML = "";
 
   result.forEach((song, i) => {
     const tr = document.createElement("tr");
     tr.className = "song-row";
+    tr.dataset.i = i; // 供「随机一首」定位
     tr.title = "点击复制歌名";
     tr.addEventListener("click", () => copyText(song.title || ""));
 
@@ -188,11 +209,13 @@ function render() {
     tdArtist.textContent = song.artist || "";
     tr.appendChild(tdArtist);
 
-    // 类型（小标签）
+    // 类型（按类型着色的小标签）
     const tdType = document.createElement("td");
     if (song.type) {
       const tag = document.createElement("span");
-      tag.className = "type-tag";
+      const cls = { "JPOP": "tag-jpop", "中文": "tag-zh",
+                    "动画/游戏插曲": "tag-anime", "VOCALOID/ボカロ": "tag-vocaloid" }[song.type] || "";
+      tag.className = "type-tag " + cls;
       tag.textContent = song.type;
       tdType.appendChild(tag);
     }

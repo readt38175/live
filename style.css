@@ -96,7 +96,7 @@ body.has-bg-image .bg-overlay { display: block; }
 
 .container {
   position: relative;
-  max-width: 1020px;
+  max-width: 1200px;
   margin: 0 auto;
   padding: 32px 16px 48px;
 }
@@ -214,8 +214,10 @@ body.has-bg-image .bg-overlay { display: block; }
   align-items: center;
   justify-content: space-between;
   margin-bottom: 12px;
+  gap: 10px;
 }
-.sort-btn {
+.toolbar-left { display: flex; gap: 10px; flex-wrap: wrap; }
+.tool-btn {
   padding: 8px 16px;
   font-size: 13px;
   border: 1px solid var(--primary);
@@ -225,8 +227,14 @@ body.has-bg-image .bg-overlay { display: block; }
   cursor: pointer;
   transition: all 0.2s;
 }
-.sort-btn:hover { background: var(--primary-dim); }
-.sort-btn.active { background: var(--primary); color: #0b0d12; font-weight: 600; }
+.tool-btn:hover { background: var(--primary-dim); }
+.tool-btn.active { background: var(--primary); color: #0b0d12; font-weight: 600; }
+.tool-btn-accent {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.tool-btn-accent:hover { background: var(--accent-dim); }
+.tool-btn-accent:active { transform: scale(0.96); }
 .count-info { font-size: 13px; color: var(--text-light); }
 
 /* ========== 歌曲表格 ========== */
@@ -271,6 +279,14 @@ body.has-bg-image .bg-overlay { display: block; }
   color: var(--text);
 }
 
+.song-row.flash {
+  animation: rowFlash 1.2s ease-in-out 2;
+}
+@keyframes rowFlash {
+  0%, 100% { background: transparent; }
+  50% { background: rgba(242, 160, 180, 0.22); }
+}
+
 /* 有图片背景时表格略带透明感 */
 body.has-bg-image .table-wrap { background: rgba(21, 24, 35, 0.9); }
 body.has-bg-image .filter-select { background: rgba(21, 24, 35, 0.9); }
@@ -304,6 +320,10 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   color: var(--primary);
   white-space: nowrap;
 }
+.tag-jpop { background: rgba(124, 227, 207, 0.14); color: #7ce3cf; }
+.tag-zh { background: rgba(242, 160, 180, 0.16); color: #f2a0b4; }
+.tag-anime { background: rgba(171, 154, 255, 0.16); color: #ab9aff; }
+.tag-vocaloid { background: rgba(122, 200, 255, 0.16); color: #7ac8ff; }
 
 .paid-yes {
   display: inline-block;
