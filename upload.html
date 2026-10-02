@@ -289,6 +289,9 @@
 </div>
 
 <script>
+/* ================= 工具函数（必须最先定义） ================= */
+const $ = id => document.getElementById(id);
+
 /* ================= 配置 ================= */
 const ADMIN_KEY = "fufu-wGe9J9p9";   // 管理密钥（修改请同步告知使用者）
 const PRESET_REPO  = "readt38175/live";   // 预置推送仓库
@@ -299,7 +302,6 @@ $("ghRepo").value = PRESET_REPO;
 $("ghBranch").value = PRESET_BRANCH;
 
 /* ================= 元素 ================= */
-const $ = id => document.getElementById(id);
 const keyInput = $("keyInput"), eyeBtn = $("eyeBtn");
 const tabExcel = $("tabExcel"), tabJson = $("tabJson");
 const paneExcel = $("paneExcel"), paneJson = $("paneJson");
