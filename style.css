@@ -358,8 +358,19 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   .avatar { width: 88px; height: 88px; }
   .filter-bar { gap: 8px; }
   .filter-select { min-width: 100%; }
+  .filter-select { padding: 2px 4px 2px 10px; }
   .container { padding: 24px 10px 40px; }
-  .table-wrap { border-radius: 12px; }
-  /* 提示用户表格可横向滑动 */
-  .table-wrap { position: relative; }
+  .table-wrap { border-radius: 12px; position: relative; }
+
+  /* 表格紧凑化：缩小字号与内边距，隐藏次要列，让「类型」在小屏直接可见 */
+  .song-table { min-width: 540px; font-size: 12.5px; }
+  .song-table thead th { padding: 8px; font-size: 12px; }
+  .song-table td { padding: 7px 8px; }
+  .th-gift, .th-note, .td-gift, .td-note { display: none; }
+  .td-idx { width: 26px; font-size: 12px; }
+  .td-title { min-width: 96px; }
+  .td-artist { min-width: 76px; }
+  .title-zh { font-size: 11px; }
+  .type-tag { padding: 1px 7px; font-size: 11px; }
+  .song-link { font-size: 12px; }
 }

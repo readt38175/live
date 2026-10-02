@@ -3,6 +3,7 @@ let songs = [];              // 全部歌曲数据（来自 songs.json）
 let site = null;             // 站点配置（来自 site.json，可能不存在）
 let currentType = "全部";     // 当前类型筛选
 let currentLang = "全部";     // 当前语种筛选
+let currentArtist = "全部";   // 当前歌手筛选
 let currentPaid = "全部";     // 当前付费筛选
 let sortArtist = false;      // 是否按歌手名排序
 let toastTimer = null;       // 复制提示计时器
@@ -11,6 +12,7 @@ const bodyEl = document.getElementById("songBody");
 const searchEl = document.getElementById("searchInput");
 const typeEl = document.getElementById("typeFilter");
 const langEl = document.getElementById("langFilter");
+const artistEl = document.getElementById("artistFilter");
 const paidEl = document.getElementById("paidFilter");
 const emptyEl = document.getElementById("emptyTip");
 const countEl = document.getElementById("countInfo");
@@ -73,6 +75,7 @@ function bindEvents() {
   searchEl.addEventListener("input", render);
   typeEl.addEventListener("change", () => { currentType = typeEl.value; render(); });
   langEl.addEventListener("change", () => { currentLang = langEl.value; render(); });
+  artistEl.addEventListener("change", () => { currentArtist = artistEl.value; render(); });
   paidEl.addEventListener("change", () => { currentPaid = paidEl.value; render(); });
 
   sortBtn.addEventListener("click", () => {
@@ -145,8 +148,11 @@ function fillSelect(sel, values) {
 function buildFilters() {
   const types = [...new Set(songs.map(s => s.type).filter(Boolean))];
   const langs = [...new Set(songs.map(s => s.language).filter(Boolean))];
+  const artists = [...new Set(songs.map(s => s.artist).filter(Boolean))]
+    .sort((a, b) => String(a).localeCompare(String(b), "zh-Hans-CN"));
   fillSelect(typeEl, types);
   fillSelect(langEl, langs);
+  fillSelect(artistEl, artists);
 }
 
 /* ================= 核心渲染 ================= */
@@ -157,12 +163,13 @@ function render() {
   let result = songs.filter(s => {
     const matchType = currentType === "全部" || s.type === currentType;
     const matchLang = currentLang === "全部" || s.language === currentLang;
+    const matchArtist = currentArtist === "全部" || s.artist === currentArtist;
     const matchPaid = currentPaid === "全部"
       || (s.paid || "否") === currentPaid
       || (currentPaid === "是" && (s.gift || "").trim()); // 有礼物也算付费
     const hay = [s.title, s.titleZh, s.artist, s.note]
       .map(x => (x || "").toLowerCase()).join(" ");
-    return matchType && matchLang && matchPaid && (!keyword || hay.includes(keyword));
+    return matchType && matchLang && matchArtist && matchPaid && (!keyword || hay.includes(keyword));
   });
 
   // 2. 排序
@@ -239,6 +246,7 @@ function render() {
 
     // 付费礼物
     const tdGift = document.createElement("td");
+    tdGift.className = "td-gift";
     tdGift.textContent = song.gift || "";
     tr.appendChild(tdGift);
 
