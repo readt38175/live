@@ -109,6 +109,8 @@
     .f-item { display: flex; flex-direction: column; gap: 5px; }
     .f-label { font-size: 12.5px; color: var(--muted); font-weight: 600; }
     .f-wide { grid-column: 1 / -1; }
+    .mode-replace { font-size: 12.5px; color: var(--muted); }
+    .mode-replace input { accent-color: #b06a6a; }
     @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
   </style>
 </head>
@@ -118,7 +120,7 @@
 
   <div class="steps">
     <b>操作步骤：</b><br>
-    1. 填入你的个人密钥<br>
+    1. 填入你的个人密钥和 GitHub Token（双验证）<br>
     2. 选择导入方式（Excel表格 或 手动填写，二选一）<br>
     3. 数据会自动转换成预览<br>
     4. 确认内容无误，点击提交同步线上歌单与更新日期
@@ -131,6 +133,15 @@
       <button class="eye" id="eyeBtn" type="button">显示</button>
     </div>
     <p class="hint">密钥需要拥有修改这个歌单网站的权限，仅自己使用，不要发给外人。</p>
+
+    <div style="height:12px"></div>
+
+    <label class="lbl">GitHub Token（与密钥双验证）</label>
+    <div class="key-row">
+      <input type="password" id="ghToken" placeholder="ghp_... 每次推送时填写" autocomplete="off">
+      <button class="eye" id="eyeTokenBtn" type="button">显示</button>
+    </div>
+    <p class="hint">Token 与密钥一起验证通过后才能推送更新；Token 只在本次页面使用，不保存。</p>
 
     <div class="tabs">
       <button class="tab active" id="tabExcel" type="button">Excel上传</button>
@@ -174,6 +185,15 @@
       <p class="hint" id="formHint">填一首点「加入列表」可连续添加多首（歌手等信息保留），最后点「生成JSON并导入」进入下方预览。</p>
 
       <details style="margin-top:12px">
+        <summary style="padding:10px 0;font-size:13px">批量填入（一次录多首）</summary>
+        <p class="hint">每行一首，格式：<code>歌名 - 歌手</code>（中划线 / 全角破折号 / Tab 分隔均可）。类型、语言、是否付费按上方当前选择统一应用。</p>
+        <textarea id="batchInput" rows="6" placeholder="爱我还是他 - 陶喆&#10;普通朋友 - 陶喆&#10;天天 - 陶喆&#10;（每行一首，格式：歌名 - 歌手）"></textarea>
+        <div style="margin-top:12px">
+          <button class="btn btn-accent" id="batchImportBtn" type="button">批量导入</button>
+        </div>
+      </details>
+
+      <details style="margin-top:12px">
         <summary style="padding:10px 0;font-size:13px">高级：粘贴 JSON / Excel 表格文本</summary>
         <textarea id="jsonInput" placeholder='格式示例：[{"title":"歌名","artist":"歌手","type":"JPOP","language":"日文","paid":"否","gift":"","note":"备注"}]&#10;也支持直接粘贴从 Excel 复制的表格文本（Tab 分隔，首行表头）'></textarea>
         <div style="margin-top:12px">
@@ -184,8 +204,9 @@
 
     <!-- 导入模式 -->
     <div class="radio-row">
-      <label><input type="radio" name="dataMode" value="replace" checked> 整体替换（覆盖全部歌曲）</label>
-      <label><input type="radio" name="dataMode" value="append"> 追加新增（自动跳过重复）</label>
+      <label><input type="radio" name="dataMode" value="append" checked> 追加新增（自动跳过重复）</label>
+      <label class="mode-replace"><input type="radio" name="dataMode" value="replace"> 整体替换 ⚠</label>
+      <label style="margin-left:auto"><input type="checkbox" id="sortList" checked> 整理歌单（自动分类排序）</label>
     </div>
 
     <label class="lbl">转换结果预览 <span style="font-weight:400;color:var(--muted);font-size:12.5px">（长内容可上下滑动）</span></label>
@@ -196,21 +217,19 @@
 
   <!-- GitHub 推送设置 -->
   <details id="ghCard">
-    <summary>GitHub 推送设置（部署仓库）</summary>
+    <summary>GitHub 推送设置（已预置，无需填写）</summary>
     <div class="inner">
-      <div class="field">
-        <label class="lbl">仓库名</label>
-        <input type="text" id="ghRepo" placeholder="用户名/仓库名，如 fufu/songlist（直接粘贴仓库网址也行）">
-        <p class="hint">支持两种写法：<code>readt38175/live</code> 或完整网址 <code>https://github.com/readt38175/live</code>，会自动识别。</p>
-      </div>
-      <div class="field">
-        <label class="lbl">个人访问令牌（Token）</label>
-        <input type="password" id="ghToken" placeholder="ghp_... （需 repo 权限）" autocomplete="off">
-        <p class="hint">Token 只在本地使用，不会保存。获取：GitHub → Settings → Developer settings → Personal access tokens。</p>
-      </div>
-      <div class="field">
-        <label class="lbl">分支</label>
-        <input type="text" id="ghBranch" value="main">
+      <p class="hint" style="margin-bottom:10px">部署仓库已内置并隐藏，Token 在上方「个人密钥」处一起填写即可。换仓库时再展开修改。</p>
+      <div id="ghManualFields" hidden>
+        <div class="field">
+          <label class="lbl">仓库名</label>
+          <input type="text" id="ghRepo" placeholder="用户名/仓库名，如 fufu/songlist（直接粘贴仓库网址也行）">
+          <p class="hint">支持两种写法：<code>readt38175/live</code> 或完整网址 <code>https://github.com/readt38175/live</code>，会自动识别。</p>
+        </div>
+        <div class="field">
+          <label class="lbl">分支</label>
+          <input type="text" id="ghBranch" value="main">
+        </div>
       </div>
       <div class="check-row">
         <label><input type="checkbox" id="pushSongs" checked> 推送 songs.json（歌单数据）</label>
@@ -272,6 +291,12 @@
 <script>
 /* ================= 配置 ================= */
 const ADMIN_KEY = "fufu-wGe9J9p9";   // 管理密钥（修改请同步告知使用者）
+const PRESET_REPO  = "readt38175/live";   // 预置推送仓库
+const PRESET_BRANCH = "main";
+
+// 预置仓库信息（不显示在界面上）
+$("ghRepo").value = PRESET_REPO;
+$("ghBranch").value = PRESET_BRANCH;
 
 /* ================= 元素 ================= */
 const $ = id => document.getElementById(id);
@@ -287,24 +312,49 @@ let siteConfig = { siteName: "", subtitle: "", background: {} };
 let validSongs = null;      // 校验通过的歌单数据
 let keyOk = false;
 
-/* ================= 密钥 ================= */
+/* ================= 密钥 + Token 双验证 ================= */
+function tokenOk() { return $("ghToken").value.trim().length > 0; }
+
 function checkKey() {
   keyOk = keyInput.value.trim() === ADMIN_KEY;
   downloadBtn.disabled = !keyOk || !validSongs;
-  pushBtn.disabled = !keyOk;
+  pushBtn.disabled = !(keyOk && tokenOk());
   if (keyOk && validSongs) pushMsg.textContent = "";
   return keyOk;
 }
+function verifyState() {
+  // 双验证状态提示
+  if (keyOk && tokenOk()) {
+    pushMsg.className = "msg ok";
+    pushMsg.textContent = "密钥 + Token 验证通过，可以推送 ✔";
+  } else if (keyOk && !tokenOk()) {
+    pushMsg.className = "msg err";
+    pushMsg.textContent = "密钥正确，还需填写 GitHub Token 才能推送";
+  } else {
+    pushMsg.className = "msg err";
+    pushMsg.textContent = "密钥不正确";
+  }
+}
 keyInput.addEventListener("input", () => {
   checkKey();
-  if (keyOk) pushMsg.className = "msg ok", pushMsg.textContent = "密钥正确 ✔";
-  else if (keyInput.value.trim()) { pushMsg.className = "msg err"; pushMsg.textContent = "密钥不正确"; }
+  if (keyInput.value.trim() || $("ghToken").value.trim()) verifyState();
+  else pushMsg.textContent = "";
+});
+$("ghToken").addEventListener("input", () => {
+  checkKey();
+  if (keyInput.value.trim() || $("ghToken").value.trim()) verifyState();
   else pushMsg.textContent = "";
 });
 eyeBtn.addEventListener("click", () => {
   const show = keyInput.type === "password";
   keyInput.type = show ? "text" : "password";
   eyeBtn.textContent = show ? "隐藏" : "显示";
+});
+$("eyeTokenBtn").addEventListener("click", () => {
+  const t = $("ghToken");
+  const show = t.type === "password";
+  t.type = show ? "text" : "password";
+  $("eyeTokenBtn").textContent = show ? "隐藏" : "显示";
 });
 
 /* ================= 标签页切换 ================= */
@@ -433,12 +483,31 @@ function rowsToSongs(rows) {
 }
 
 /* ================= 预览与校验 ================= */
+const zhCollator = new Intl.Collator("zh-Hans-CN", { numeric: true });
+const LANG_ORDER = ["中文", "日文"];
+const TYPE_ORDER = ["中文", "JPOP", "动画/游戏插曲", "动画·游戏插曲", "VOCALOID/ボカロ", "昭和老歌"];
+
+function sortSonglist(arr) {
+  const langRank = s => { const i = LANG_ORDER.indexOf(s.language); return i === -1 ? LANG_ORDER.length : i; };
+  const typeRank = s => { const i = TYPE_ORDER.indexOf(s.type); return i === -1 ? TYPE_ORDER.length : i; };
+  arr.sort((a, b) =>
+    langRank(a) - langRank(b) ||
+    typeRank(a) - typeRank(b) ||
+    zhCollator.compare(a.artist || "", b.artist || "") ||
+    zhCollator.compare(a.title || "", b.title || ""));
+  return arr;
+}
+
 async function acceptSongs(parsed, sourceName) {
   try {
     const bad = parsed.filter(s => !s.title || !s.artist);
     if (bad.length) throw new Error(`${sourceName}中有 ${bad.length} 条记录缺少歌名或歌手`);
 
     const mode = document.querySelector("input[name=dataMode]:checked").value;
+    if (mode === "replace") {
+      const ok = window.confirm(`确认整体替换歌单？\n\n将用导入的 ${parsed.length} 首歌曲覆盖现有全部歌曲，此操作不可撤销。\n（如只是想加几首歌，请选「追加新增」）`);
+      if (!ok) throw new Error("已取消整体替换，未做任何更改");
+    }
     if (mode === "append") {
       let existing = [];
       const res = await fetch("songs.json");
@@ -447,14 +516,19 @@ async function acceptSongs(parsed, sourceName) {
       const seen = new Set(existing.map(key));
       const fresh = parsed.filter(s => !seen.has(key(s)));
       validSongs = existing.concat(fresh);
-      showPreviewOk(`追加完成：现有 ${existing.length} 首 + 新增 ${fresh.length} 首（跳过重复 ${parsed.length - fresh.length} 首），合并后共 ${validSongs.length} 首。`, validSongs);
+      const sorted = $("sortList").checked;
+      if (sorted) sortSonglist(validSongs);
+      showPreviewOk(`追加完成：现有 ${existing.length} 首 + 新增 ${fresh.length} 首（跳过重复 ${parsed.length - fresh.length} 首），合并后共 ${validSongs.length} 首${sorted ? "，已按 语种→类型→歌手→歌名 整理排序" : ""}。`, validSongs);
     } else {
       validSongs = parsed;
-      showPreviewOk(`校验通过：${sourceName}共 ${validSongs.length} 首（整体替换）。`, validSongs);
+      const sorted = $("sortList").checked;
+      if (sorted) sortSonglist(validSongs);
+      showPreviewOk(`校验通过：${sourceName}共 ${validSongs.length} 首（整体替换${sorted ? "，已按 语种→类型→歌手→歌名 整理排序" : ""}）。`, validSongs);
     }
     downloadBtn.disabled = !keyOk;
-    pushBtn.disabled = !keyOk;
+    pushBtn.disabled = !(keyOk && tokenOk());
     if (!keyOk) pushMsg.className = "msg err", pushMsg.textContent = "数据已就绪，请先在上方填写正确的个人密钥";
+    else if (!tokenOk()) pushMsg.className = "msg err", pushMsg.textContent = "数据已就绪，还需填写 GitHub Token 才能推送";
   } catch (e) {
     validSongs = null;
     preview.className = "err";
@@ -542,6 +616,55 @@ $("formImportBtn").addEventListener("click", async () => {
     await acceptSongs(songs, "手动填写");
     formQueue = [];
     formHint(`✅ 已生成 JSON 并导入 ${songs.length} 首，请查看下方预览。`);
+  } catch (e) {
+    formHint("❌ " + e.message, true);
+  }
+});
+
+/* ================= 批量填入（多行歌名 - 歌手） ================= */
+$("batchImportBtn").addEventListener("click", async () => {
+  const raw = $("batchInput").value;
+  const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+  if (!lines.length) { formHint("❌ 请先在批量填入框里粘贴歌曲，每行一首：歌名 - 歌手", true); return; }
+
+  // 共同属性取表单当前选择
+  const shared = {
+    type: fType.value.trim(),
+    language: fLang.value,
+    paid: $("fPaid").value,
+    gift: $("fGift").value.trim(),
+    note: $("fNote").value.trim(),
+    titleZh: ""
+  };
+
+  const songs = [];
+  const errors = [];
+  lines.forEach((line, i) => {
+    // 分隔符：Tab / 中划线 / 全角破折号 / 空格 surrounded
+    let parts = null;
+    if (line.includes("\t")) parts = line.split("\t");
+    else {
+      const m = line.match(/^(.+?)\s*(?:—+|--|－|-|——)\s*(.+)$/);
+      if (m) parts = [m[1], m[2]];
+    }
+    if (!parts || parts.length < 2 || !parts[0].trim() || !parts[1].trim()) {
+      errors.push(`第 ${i + 1} 行「${line.slice(0, 20)}」无法识别，请用「歌名 - 歌手」格式`);
+      return;
+    }
+    songs.push(normalize(Object.assign({}, shared, {
+      title: parts[0].trim(),
+      artist: parts[1].trim()
+    })));
+  });
+
+  if (errors.length) {
+    formHint("❌ 批量内容有误：" + errors.join("；"), true);
+    return;
+  }
+  try {
+    await acceptSongs(songs, "批量填入");
+    formHint(`✅ 批量导入 ${songs.length} 首，请查看下方预览。`);
+    $("batchInput").value = "";
   } catch (e) {
     formHint("❌ " + e.message, true);
   }
@@ -674,7 +797,7 @@ pushBtn.addEventListener("click", async () => {
   const repo = normalizeRepo($("ghRepo").value);
   const token = $("ghToken").value.trim();
   const branch = $("ghBranch").value.trim() || "main";
-  if (!repo || !token) { pushMsg.className = "msg err"; pushMsg.textContent = "请展开「GitHub 推送设置」填写仓库名和 Token"; return; }
+  if (!repo || !token) { pushMsg.className = "msg err"; pushMsg.textContent = "请填写上方的 GitHub Token（与密钥一起验证）"; return; }
 
   const pushSongs = $("pushSongs").checked;
   const pushSite = $("pushSite").checked;
@@ -701,7 +824,7 @@ pushBtn.addEventListener("click", async () => {
     pushMsg.className = "msg err";
     pushMsg.textContent = "推送失败：" + e.message;
   } finally {
-    pushBtn.disabled = false;
+    pushBtn.disabled = !(keyOk && tokenOk());
     pushBtn.textContent = "推送更新";
   }
 });
