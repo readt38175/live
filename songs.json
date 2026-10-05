@@ -88,6 +88,17 @@
   "link": ""
  },
  {
+  "title": "心之火",
+  "titleZh": "",
+  "artist": "F.I.R.",
+  "type": "中文",
+  "language": "中文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
   "title": "月牙湾",
   "titleZh": "",
   "artist": "F.I.R.",
@@ -245,6 +256,17 @@
   "title": "夜车",
   "titleZh": "",
   "artist": "曾轶可",
+  "type": "中文",
+  "language": "中文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
+  "title": "春天的芭蕾",
+  "titleZh": "",
+  "artist": "常思思",
   "type": "中文",
   "language": "中文",
   "paid": "否",
@@ -451,6 +473,17 @@
   "link": ""
  },
  {
+  "title": "晚婚",
+  "titleZh": "",
+  "artist": "李宗盛",
+  "type": "中文",
+  "language": "中文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
   "title": "孤单北半球",
   "titleZh": "",
   "artist": "梁静茹",
@@ -575,6 +608,39 @@
   "title": "勾指起誓",
   "titleZh": "",
   "artist": "洛天依/ilem",
+  "type": "中文",
+  "language": "中文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
+  "title": "霓虹甜心",
+  "titleZh": "",
+  "artist": "马赛克",
+  "type": "中文",
+  "language": "中文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
+  "title": "不染",
+  "titleZh": "",
+  "artist": "毛不易",
+  "type": "中文",
+  "language": "中文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
+  "title": "盛夏的果实",
+  "titleZh": "",
+  "artist": "莫文蔚",
   "type": "中文",
   "language": "中文",
   "paid": "否",
@@ -1177,9 +1243,31 @@
   "link": ""
  },
  {
+  "title": "苏幕遮",
+  "titleZh": "",
+  "artist": "张晓棠",
+  "type": "中文",
+  "language": "中文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
   "title": "爱就一个字",
   "titleZh": "",
   "artist": "张信哲",
+  "type": "中文",
+  "language": "中文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
+  "title": "嘉宾",
+  "titleZh": "",
+  "artist": "张远",
   "type": "中文",
   "language": "中文",
   "paid": "否",
@@ -1270,6 +1358,17 @@
   "artist": "祖海",
   "type": "中文",
   "language": "中文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
+  "title": "好きだから。",
+  "titleZh": "因为喜欢你。",
+  "artist": "『ユイカ』",
+  "type": "JPOP",
+  "language": "日文",
   "paid": "否",
   "gift": "",
   "note": "",
@@ -1650,6 +1749,17 @@
   "link": ""
  },
  {
+  "title": "せっかく濡れた愛が渇く前に",
+  "titleZh": "爱未枯竭前",
+  "artist": "阿梓从小就很可爱",
+  "type": "JPOP",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
   "title": "空港",
   "titleZh": "",
   "artist": "邓丽君",
@@ -1741,6 +1851,17 @@
   "title": "you&idol",
   "titleZh": "",
   "artist": "相对性理论",
+  "type": "JPOP",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
+  "title": "小さな恋のうた",
+  "titleZh": "小小恋歌",
+  "artist": "新垣結衣",
   "type": "JPOP",
   "language": "日文",
   "paid": "否",
@@ -2695,6 +2816,17 @@
   "link": ""
  },
  {
+  "title": "名前のない怪物",
+  "titleZh": "没有名字的怪物",
+  "artist": "EGOIST",
+  "type": "动画/游戏插曲",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "心理测量者",
+  "link": ""
+ },
+ {
   "title": "晓之车",
   "titleZh": "",
   "artist": "FictionJunction",
@@ -2849,6 +2981,17 @@
   "link": ""
  },
  {
+  "title": "Paradisus-Paradoxum",
+  "titleZh": "",
+  "artist": "MYTH & ROID",
+  "type": "动画/游戏插曲",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "Re:从零开始异世界生活",
+  "link": ""
+ },
+ {
   "title": "STYX HELIX",
   "titleZh": "",
   "artist": "MYTH & ROID",
@@ -2970,6 +3113,17 @@
   "link": ""
  },
  {
+  "title": "silent wind bell",
+  "titleZh": "",
+  "artist": "いとうかなこ",
+  "type": "动画/游戏插曲",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "混沌之子",
+  "link": ""
+ },
+ {
   "title": "平行線",
   "titleZh": "",
   "artist": "さユり/酸欠少女",
@@ -3000,6 +3154,28 @@
   "paid": "否",
   "gift": "",
   "note": "精灵使的剑舞",
+  "link": ""
+ },
+ {
+  "title": "GIRAFFE BLUES",
+  "titleZh": "",
+  "artist": "ワルキューレ",
+  "type": "动画/游戏插曲",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "超时空要塞△",
+  "link": ""
+ },
+ {
+  "title": "マジックナンバー",
+  "titleZh": "魔法数字",
+  "artist": "坂本真綾",
+  "type": "动画/游戏插曲",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "小鸠",
   "link": ""
  },
  {
@@ -3066,6 +3242,28 @@
   "paid": "否",
   "gift": "",
   "note": "青春猪头少年系列",
+  "link": ""
+ },
+ {
+  "title": "Redo",
+  "titleZh": "",
+  "artist": "鈴木このみ",
+  "type": "动画/游戏插曲",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "Re:从零开始异世界生活",
+  "link": ""
+ },
+ {
+  "title": "this game",
+  "titleZh": "",
+  "artist": "鈴木このみ",
+  "type": "动画/游戏插曲",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "游戏人生",
   "link": ""
  },
  {
@@ -3597,9 +3795,31 @@
   "link": ""
  },
  {
+  "title": "アンノウン・マザーグース",
+  "titleZh": "不为人知的鹅妈妈童谣",
+  "artist": "wowaka",
+  "type": "VOCALOID/ボカロ",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
   "title": "ローリンガール",
   "titleZh": "翻滚少女",
   "artist": "wowaka",
+  "type": "VOCALOID/ボカロ",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
+  "title": "命に嫌われている",
+  "titleZh": "被生命所厌恶",
+  "artist": "カンザキイオリ",
   "type": "VOCALOID/ボカロ",
   "language": "日文",
   "paid": "否",
@@ -3666,6 +3886,39 @@
   "title": "エイリアンエイリアン",
   "titleZh": "Alien Alien",
   "artist": "ナユタン星人",
+  "type": "VOCALOID/ボカロ",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
+  "title": "モア！ジャンプ！モア！",
+  "titleZh": "More！Jump！More！",
+  "artist": "ナユタン星人",
+  "type": "VOCALOID/ボカロ",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
+  "title": "太陽系デスコ",
+  "titleZh": "太阳系disco",
+  "artist": "ナユタン星人",
+  "type": "VOCALOID/ボカロ",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
+  "title": "Mimukauwa Nice Try",
+  "titleZh": "",
+  "artist": "ぬぬぬぬぬぬぬぬ",
   "type": "VOCALOID/ボカロ",
   "language": "日文",
   "paid": "否",
@@ -3795,6 +4048,17 @@
   "link": ""
  },
  {
+  "title": "カトラリー",
+  "titleZh": "餐具",
+  "artist": "神山羊",
+  "type": "VOCALOID/ボカロ",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
   "title": "Endroll",
   "titleZh": "",
   "artist": "夏代孝明",
@@ -3839,8 +4103,30 @@
   "link": ""
  },
  {
+  "title": "阿吽のビーツ",
+  "titleZh": "阿吽的节奏",
+  "artist": "羽生まゐご",
+  "type": "VOCALOID/ボカロ",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
   "title": "エバ",
   "titleZh": "夏娃",
+  "artist": "柊キライ",
+  "type": "VOCALOID/ボカロ",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
+  "title": "ボッカデラベリタ",
+  "titleZh": "真理之口",
   "artist": "柊キライ",
   "type": "VOCALOID/ボカロ",
   "language": "日文",
