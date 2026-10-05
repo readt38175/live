@@ -133,6 +133,24 @@ body.has-bg-image .bg-overlay { display: block; }
 }
 .subtitle { color: var(--text-light); font-size: 14px; }
 
+/* ========== 吸顶筛选区（桌面端：筛选+搜索+工具栏整体吸顶） ========== */
+.sticky-sentinel { height: 1px; }
+.sticky-area {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  display: flow-root;        /* 包住子元素 margin，吸顶量高准确 */
+  border-radius: 14px;
+}
+/* 贴住顶端后加底色 + 毛玻璃 + 投影，滚动内容从下方穿过时不透字 */
+.sticky-area.stuck {
+  background: rgba(11, 13, 18, 0.88);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45);
+  border: 1px solid var(--border);
+}
+
 /* ========== 筛选栏（类型 / 语种 / 付费 下拉，仿参考图） ========== */
 .filter-bar {
   display: flex;
@@ -242,8 +260,8 @@ body.has-bg-image .bg-overlay { display: block; }
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;
-  overflow-x: auto;           /* 小屏横向滚动，不破坏布局 */
-  -webkit-overflow-scrolling: touch;
+  /* 桌面端不裁剪溢出：ancestor 有 overflow 时会破坏 thead 的 sticky 表头 */
+  overflow-x: visible;
 }
 .song-table {
   width: 100%;
@@ -253,7 +271,7 @@ body.has-bg-image .bg-overlay { display: block; }
 }
 .song-table thead th {
   position: sticky;
-  top: 0;
+  top: var(--sticky-h, 0px);  /* 跟随吸顶筛选区高度，避免表头被遮住 */
   background: #1a1e2c;
   color: var(--text-light);
   font-size: 13px;
@@ -334,6 +352,16 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   color: var(--accent);
   font-weight: 600;
 }
+/* 付费礼物内容（含 SC 点歌金额等）：粉色标识付费歌曲 */
+.gift-val {
+  display: inline-block;
+  padding: 2px 10px;
+  font-size: 12px;
+  border-radius: 999px;
+  background: var(--accent-dim);
+  color: var(--accent);
+  white-space: nowrap;
+}
 .td-muted { color: var(--text-light); }
 
 .td-note { color: var(--accent); font-size: 12.5px; min-width: 100px; }
@@ -360,17 +388,36 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   .filter-select { min-width: 100%; }
   .filter-select { padding: 2px 4px 2px 10px; }
   .container { padding: 24px 10px 40px; }
-  .table-wrap { border-radius: 12px; position: relative; }
+  .table-wrap { border-radius: 12px; position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; }
 
-  /* 表格紧凑化：缩小字号与内边距，隐藏次要列，让「类型」在小屏直接可见 */
+  /* 移动端：仅搜索框吸顶。display:contents 让 .sticky-area 不生成盒子，
+     搜索框的吸顶容器升格为整个页面，滚到哪都能吸住 */
+  .sticky-area { display: contents; }
+  .search-box {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    border-radius: 14px;
+  }
+  .search-box.stuck {
+    background: rgba(11, 13, 18, 0.88);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    border: 1px solid var(--border);
+  }
+
+  /* 表格紧凑化：缩小字号与内边距，隐藏次要列，让「类型」「付费礼物」在小屏直接可见 */
   .song-table { min-width: 540px; font-size: 12.5px; }
   .song-table thead th { padding: 8px; font-size: 12px; }
   .song-table td { padding: 7px 8px; }
-  .th-gift, .th-note, .td-gift, .td-note { display: none; }
+  .th-note, .td-note { display: none; }
+  .td-gift { white-space: nowrap; }
   .td-idx { width: 26px; font-size: 12px; }
   .td-title { min-width: 96px; }
   .td-artist { min-width: 76px; }
   .title-zh { font-size: 11px; }
   .type-tag { padding: 1px 7px; font-size: 11px; }
+  .gift-val { padding: 1px 7px; font-size: 11px; }
   .song-link { font-size: 12px; }
 }

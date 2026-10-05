@@ -23,8 +23,13 @@
       <p class="subtitle" id="siteSubtitle">轻点歌名即可复制</p>
     </header>
 
-    <!-- 筛选栏：类型 / 语种 / 付费（下拉） -->
-    <div class="filter-bar">
+    <!-- 吸顶哨兵：用于判断筛选区是否滚动到顶部 -->
+    <div class="sticky-sentinel" id="stickySentinel" aria-hidden="true"></div>
+
+    <!-- 吸顶区：筛选 + 搜索 + 工具栏（桌面端整体吸顶；移动端仅搜索框吸顶） -->
+    <div class="sticky-area" id="stickyArea">
+      <!-- 筛选栏：类型 / 语种 / 付费（下拉） -->
+      <div class="filter-bar">
       <label class="filter-select">
         <span class="fs-label">类型</span>
         <select id="typeFilter" aria-label="按类型筛选"></select>
@@ -57,10 +62,12 @@
     <div class="toolbar">
       <div class="toolbar-left">
         <button id="sortArtistBtn" class="tool-btn" type="button">按歌手名排序</button>
+        <button id="sortTitleBtn" class="tool-btn" type="button">按歌名排序</button>
         <button id="randomBtn" class="tool-btn tool-btn-accent" type="button">🎲 随机一首</button>
       </div>
       <span id="countInfo" class="count-info"></span>
     </div>
+    </div><!-- /sticky-area -->
 
     <!-- 歌曲表格（小屏横向滚动） -->
     <div class="table-wrap">
@@ -72,7 +79,6 @@
             <th>歌手</th>
             <th>类型</th>
             <th>语言</th>
-            <th>是否付费</th>
             <th class="th-gift">付费礼物</th>
             <th class="th-note">备注</th>
             <th></th>

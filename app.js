@@ -5,7 +5,7 @@ let currentType = "全部";     // 当前类型筛选
 let currentLang = "全部";     // 当前语种筛选
 let currentArtist = "全部";   // 当前歌手筛选
 let currentPaid = "全部";     // 当前付费筛选
-let sortArtist = false;      // 是否按歌手名排序
+let sortMode = null;         // 排序模式：null=原顺序 | "artist"=按歌手 | "title"=按歌名
 let toastTimer = null;       // 复制提示计时器
 
 const bodyEl = document.getElementById("songBody");
@@ -17,8 +17,12 @@ const paidEl = document.getElementById("paidFilter");
 const emptyEl = document.getElementById("emptyTip");
 const countEl = document.getElementById("countInfo");
 const sortBtn = document.getElementById("sortArtistBtn");
+const sortTitleBtn = document.getElementById("sortTitleBtn");
 const randomBtn = document.getElementById("randomBtn");
 const toastEl = document.getElementById("toast");
+const stickyArea = document.getElementById("stickyArea");
+const stickySentinel = document.getElementById("stickySentinel");
+const searchBox = document.querySelector(".search-box");
 let lastResult = [];         // 最近一次筛选结果（供「随机一首」使用）
 
 /* ================= 启动 ================= */
@@ -36,6 +40,7 @@ async function init() {
   applySiteConfig();
   buildFilters();
   bindEvents();
+  setupSticky();
   render();
 }
 
@@ -78,12 +83,8 @@ function bindEvents() {
   artistEl.addEventListener("change", () => { currentArtist = artistEl.value; render(); });
   paidEl.addEventListener("change", () => { currentPaid = paidEl.value; render(); });
 
-  sortBtn.addEventListener("click", () => {
-    sortArtist = !sortArtist;
-    sortBtn.classList.toggle("active", sortArtist);
-    sortBtn.textContent = sortArtist ? "恢复原顺序" : "按歌手名排序";
-    render();
-  });
+  sortBtn.addEventListener("click", () => setSortMode(sortMode === "artist" ? null : "artist"));
+  sortTitleBtn.addEventListener("click", () => setSortMode(sortMode === "title" ? null : "title"));
 
   // 随机一首：从当前筛选结果里随机选一首，滚动到该行并高亮 + 复制歌名
   randomBtn.addEventListener("click", () => {
@@ -102,6 +103,51 @@ function bindEvents() {
     if (pick.title) copyText(pick.title); // 顺手复制，方便去搜歌
   });
 }
+
+/* ================= 排序模式切换（歌手 / 歌名 二选一，可恢复原顺序） ================= */
+function setSortMode(mode) {
+  sortMode = mode;
+  sortBtn.classList.toggle("active", mode === "artist");
+  sortBtn.textContent = mode === "artist" ? "恢复原顺序" : "按歌手名排序";
+  sortTitleBtn.classList.toggle("active", mode === "title");
+  sortTitleBtn.textContent = mode === "title" ? "恢复原顺序" : "按歌名排序";
+  render();
+}
+
+/* ================= 吸顶：桌面整体吸顶 / 移动端仅搜索框 ================= */
+const mobileMq = window.matchMedia("(max-width: 480px)");
+let stickyObserver = null;
+
+function currentStickyEl() {
+  return mobileMq.matches ? searchBox : stickyArea;
+}
+
+// 量取吸顶区高度 -> 写入 CSS 变量，供表头 sticky top 使用，避免表头被遮住
+function updateStickyHeight() {
+  const h = currentStickyEl().offsetHeight;
+  document.documentElement.style.setProperty("--sticky-h", h + "px");
+}
+
+function setupSticky() {
+  if (stickyObserver) stickyObserver.disconnect();
+  // 哨兵离开视口顶部 = 吸顶区已贴住顶端，加投影/背景
+  stickyObserver = new IntersectionObserver(entries => {
+    entries.forEach(en => {
+      const stuck = !en.isIntersecting;
+      stickyArea.classList.toggle("stuck", stuck && !mobileMq.matches);
+      searchBox.classList.toggle("stuck", stuck && mobileMq.matches);
+    });
+  }, { rootMargin: "-1px 0px 0px 0px", threshold: 0 });
+  stickyObserver.observe(stickySentinel);
+  updateStickyHeight();
+}
+
+mobileMq.addEventListener("change", () => {
+  stickyArea.classList.remove("stuck");
+  searchBox.classList.remove("stuck");
+  setupSticky();
+});
+window.addEventListener("resize", updateStickyHeight);
 
 /* ================= 点击复制歌名 ================= */
 function copyText(text) {
@@ -173,9 +219,13 @@ function render() {
   });
 
   // 2. 排序
-  if (sortArtist) {
+  if (sortMode === "artist") {
     result = [...result].sort((a, b) =>
       String(a.artist || "").localeCompare(String(b.artist || ""), "zh-Hans-CN")
+    );
+  } else if (sortMode === "title") {
+    result = [...result].sort((a, b) =>
+      String(a.title || "").localeCompare(String(b.title || ""), "zh-Hans-CN")
     );
   }
 
@@ -234,20 +284,21 @@ function render() {
     tdLang.textContent = song.language || "";
     tr.appendChild(tdLang);
 
-    // 是否付费（是 -> 粉色高亮；否 -> 留空）
-    const tdPaid = document.createElement("td");
-    if ((song.paid || "否") === "是") {
+    // 付费礼物（合并原「是否付费」：有礼物直接显示内容/金额；仅标记付费无礼物则显示「是」）
+    const tdGift = document.createElement("td");
+    tdGift.className = "td-gift";
+    const gift = (song.gift || "").trim();
+    if (gift) {
+      const g = document.createElement("span");
+      g.className = "gift-val";
+      g.textContent = gift;
+      tdGift.appendChild(g);
+    } else if ((song.paid || "否") === "是") {
       const b = document.createElement("span");
       b.className = "paid-yes";
       b.textContent = "是";
-      tdPaid.appendChild(b);
+      tdGift.appendChild(b);
     }
-    tr.appendChild(tdPaid);
-
-    // 付费礼物
-    const tdGift = document.createElement("td");
-    tdGift.className = "td-gift";
-    tdGift.textContent = song.gift || "";
     tr.appendChild(tdGift);
 
     // 备注（粉色小字，对应 Excel「备注」列）
