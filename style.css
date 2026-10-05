@@ -380,6 +380,15 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
 .admin-link { font-size: 13px; color: var(--text-light); text-decoration: none; }
 .admin-link:hover { color: var(--primary); }
 
+/* ========== 平板/窄屏：表格横向滚动 + 关闭表头吸顶 ========== */
+/* 注意：table-wrap 一旦成为滚动容器（overflow-x:auto），thead 的 sticky
+   会以它为基准——容器顶部就是表格顶部，表头在初始状态就被 top 偏移
+   向下推、直接盖住第一行数据。因此窄屏下关闭表头吸顶，让它随表格滚动 */
+@media (max-width: 900px) {
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .song-table thead th { position: static; }
+}
+
 /* ========== 移动端适配 ========== */
 @media (max-width: 480px) {
   .header h1 { font-size: 21px; }
@@ -388,7 +397,13 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   .filter-select { min-width: 100%; }
   .filter-select { padding: 2px 4px 2px 10px; }
   .container { padding: 24px 10px 40px; }
-  .table-wrap { border-radius: 12px; position: relative; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .table-wrap { border-radius: 12px; position: relative; }
+
+  /* 工具栏：缩小按钮字号与内边距，三个按钮尽量排成一行 */
+  .toolbar { flex-wrap: wrap; gap: 6px; }
+  .toolbar-left { flex-wrap: nowrap; gap: 6px; }
+  .tool-btn { padding: 6px 10px; font-size: 12px; border-radius: 9px; white-space: nowrap; }
+  .count-info { font-size: 11px; }
 
   /* 移动端：仅搜索框吸顶。display:contents 让 .sticky-area 不生成盒子，
      搜索框的吸顶容器升格为整个页面，滚到哪都能吸住 */
