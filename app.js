@@ -103,11 +103,6 @@ function bindEvents() {
     if (pick.title) copyText(pick.title); // 顺手复制，方便去搜歌
   });
 
-  // 头部快捷链接：直播间暂未开通
-  const liveBtn = document.getElementById("liveBtn");
-  if (liveBtn) {
-    liveBtn.addEventListener("click", () => showToast("📺 直播间还未开通，敬请期待～"));
-  }
 }
 
 /* ================= 排序模式切换（歌手 / 歌名 二选一，可恢复原顺序） ================= */
