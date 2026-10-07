@@ -275,6 +275,7 @@ function render() {
                     "动画/游戏插曲": "tag-anime", "VOCALOID/ボカロ": "tag-vocaloid" }[song.type] || "";
       tag.className = "type-tag " + cls;
       tag.textContent = song.type;
+      tag.title = song.type; // 移动端截断时悬停/长按可看全称
       tdType.appendChild(tag);
     }
     tr.appendChild(tdType);
@@ -310,6 +311,7 @@ function render() {
 
     // 收听链接
     const tdLink = document.createElement("td");
+    tdLink.className = "td-link";
     if (song.link) {
       const a = document.createElement("a");
       a.className = "song-link";
