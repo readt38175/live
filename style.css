@@ -422,10 +422,15 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
     border: 1px solid var(--border);
   }
 
-  /* 表格紧凑化：不再横向滚动，隐藏次要列让所有列完整适配屏宽——
-     只有去掉横向滚动容器，表头 sticky 才能以页面为基准吸顶 */
-  .table-wrap { overflow-x: visible; -webkit-overflow-scrolling: auto; }
-  .song-table { min-width: 0; width: 100%; table-layout: fixed; font-size: 12.5px; }
+  /* 表格：基础四列（# / 歌名 / 歌手 / 类型）正好铺满屏宽，
+     「付费礼物」列额外多出 ~70px，横向拖动才能看到 */
+  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  .song-table {
+    min-width: calc(100% + 70px);   /* 刚好多出付费礼物一列 */
+    width: 100%;
+    table-layout: fixed;
+    font-size: 12.5px;
+  }
   .song-table thead th { padding: 8px; font-size: 12px; }
   .song-table td { padding: 7px 8px; overflow: hidden; }
   .th-note, .td-note, .th-lang, .td-lang, .th-link, .td-link { display: none; }
@@ -435,11 +440,12 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   .song-table th:nth-child(6) { width: 66px; }
   .song-table th:nth-child(3) { width: 27%; }
 
-  /* 表头随列表滚动吸顶：贴在吸顶搜索框正下方 */
+  /* 表头吸顶改由 JS 反向位移实现（横滚容器会让 sticky 失效）：
+     这里只负责外观与图层顺序 */
+  .song-table thead { position: relative; z-index: 45; }
   .song-table thead th {
-    position: sticky;
-    top: var(--sticky-h);
-    z-index: 50;
+    padding: 8px;
+    font-size: 12px;
     background: #1a1e2c;
   }
 

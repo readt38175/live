@@ -150,6 +150,34 @@ mobileMq.addEventListener("change", () => {
 });
 window.addEventListener("resize", updateStickyHeight);
 
+/* 移动端表头吸顶（JS 反向位移）：
+   表格容器横向滚动后 sticky 以容器为基准会失效，
+   改为滚动时计算位移量，把 thead 往下推、钉在搜索框正下方 */
+const theadEl = document.querySelector(".song-table thead");
+
+function updateTheadPin() {
+  if (!theadEl) return;
+  if (!mobileMq.matches) {          // 桌面/平板走原生 sticky 逻辑
+    if (theadEl.style.transform) theadEl.style.transform = "";
+    return;
+  }
+  const table = theadEl.closest(".song-table");
+  if (!table) return;
+  const tRect = table.getBoundingClientRect();
+  if (!tRect.height) return;        // 列表未渲染
+  const stickyH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sticky-h")) || 0;
+  let delta = stickyH - tRect.top;  // 表头需要下移的距离
+  const maxDelta = tRect.height - theadEl.offsetHeight;
+  if (delta <= 0 || delta >= maxDelta) {
+    // 表格未滚到 / 已滚过：恢复原位
+    if (theadEl.style.transform) theadEl.style.transform = "";
+  } else {
+    theadEl.style.transform = "translateY(" + delta + "px)";
+  }
+}
+window.addEventListener("scroll", updateTheadPin, { passive: true });
+window.addEventListener("resize", updateTheadPin);
+
 /* ================= 点击复制歌名 ================= */
 function copyText(text) {
   const done = () => showToast(`已复制《${text}》`);
@@ -235,6 +263,7 @@ function render() {
   emptyEl.hidden = result.length > 0;
   lastResult = result;
   bodyEl.innerHTML = "";
+  updateTheadPin();   // 重渲染后表头钉住状态需立即校正
 
   result.forEach((song, i) => {
     const tr = document.createElement("tr");
