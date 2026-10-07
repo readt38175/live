@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>芙芙的歌单</title>
-  <link rel="icon" href="favicon.ico?v=2" type="image/x-icon">
+  <link rel="icon" href="favicon.ico?v=3" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -21,6 +21,18 @@
            onerror="this.style.display='none'">
       <h1 id="siteTitle">芙芙的歌单</h1>
       <p class="subtitle" id="siteSubtitle">轻点歌名即可复制</p>
+      <!-- 头部快捷链接：个人空间 / 直播间 -->
+      <div class="header-links">
+        <a class="link-btn link-space" href="https://space.bilibili.com/3707011451587316"
+           target="_blank" rel="noopener" title="前往B站个人空间">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M17.8 4.6l1.6 2.6h1.9c1.4 0 2.6 1.1 2.6 2.6v9.5c0 1.4-1.2 2.6-2.6 2.6H2.7c-1.4 0-2.6-1.2-2.6-2.6V9.8c0-1.5 1.2-2.6 2.6-2.6h1.9l1.6-2.6c.5-.8 1.5-1.1 2.3-.6.8.4 1.1 1.4.7 2.2l-.8 1h7.2l-.8-1c-.5-.8-.2-1.8.6-2.2.8-.5 1.8-.2 2.4.6zM5.5 11.2c-.7 0-1.3.6-1.3 1.3v3.2c0 .7.6 1.3 1.3 1.3s1.3-.6 1.3-1.3v-3.2c0-.7-.6-1.3-1.3-1.3zm13 0c-.7 0-1.3.6-1.3 1.3v3.2c0 .7.6 1.3 1.3 1.3s1.3-.6 1.3-1.3v-3.2c0-.7-.6-1.3-1.3-1.3z"/></svg>
+          个人空间
+        </a>
+        <a class="link-btn link-live" id="liveBtn" href="javascript:void(0)" title="直播间暂未开通">
+          <svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><path fill="currentColor" d="M12 2c.4 0 .8.2 1 .5l2.2 2.6h4.2C20.9 5.1 22 6.2 22 7.6v11.2c0 1.4-1.1 2.5-2.6 2.5H4.6C3.1 21.3 2 20.2 2 18.8V7.6c0-1.4 1.1-2.5 2.6-2.5h4.2L11 2.5c.2-.3.6-.5 1-.5zm-3 8.1c-.8 0-1.5.7-1.5 1.5v4.8c0 .8.7 1.5 1.5 1.5h6c.8 0 1.5-.7 1.5-1.5v-4.8c0-.8-.7-1.5-1.5-1.5h-6z"/></svg>
+          直播间
+        </a>
+      </div>
     </header>
 
     <!-- 吸顶哨兵：用于判断筛选区是否滚动到顶部 -->

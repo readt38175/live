@@ -133,6 +133,44 @@ body.has-bg-image .bg-overlay { display: block; }
 }
 .subtitle { color: var(--text-light); font-size: 14px; }
 
+/* 头部快捷链接：个人空间 / 直播间 */
+.header-links {
+  display: flex;
+  gap: 12px;
+  margin-top: 16px;
+}
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 20px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  letter-spacing: 0.5px;
+  border: 1px solid transparent;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+.link-btn:hover { transform: translateY(-2px); }
+.link-btn:active { transform: translateY(0); }
+.link-btn svg { flex-shrink: 0; }
+
+.link-space {
+  color: #0b0d12;
+  background: linear-gradient(135deg, var(--primary), #a5ecdc);
+  box-shadow: 0 4px 16px rgba(124, 227, 207, 0.22);
+}
+.link-space:hover { box-shadow: 0 6px 22px rgba(124, 227, 207, 0.34); }
+
+.link-live {
+  color: var(--accent);
+  background: var(--accent-dim);
+  border-color: rgba(242, 160, 180, 0.45);
+  box-shadow: 0 4px 16px rgba(242, 160, 180, 0.10);
+}
+.link-live:hover { background: rgba(242, 160, 180, 0.26); box-shadow: 0 6px 22px rgba(242, 160, 180, 0.2); }
+
 /* ========== 吸顶筛选区（桌面端：筛选+搜索+工具栏整体吸顶） ========== */
 .sticky-sentinel { height: 1px; }
 .sticky-area {
@@ -393,6 +431,8 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
 @media (max-width: 480px) {
   .header h1 { font-size: 21px; }
   .avatar { width: 88px; height: 88px; }
+  .header-links { gap: 9px; margin-top: 13px; }
+  .link-btn { padding: 7px 15px; font-size: 12.5px; }
   .filter-bar { gap: 8px; }
   .filter-select { min-width: 100%; }
   .filter-select { padding: 2px 4px 2px 10px; }
