@@ -424,15 +424,30 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
 
   /* 表格：基础四列（# / 歌名 / 歌手 / 类型）正好铺满屏宽，
      「付费礼物」列额外多出 ~70px，横向拖动才能看到 */
-  .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  /* 不用 overflow-x:auto 横滚容器（它会让 thead 的 sticky 以容器为基准而
+     失效），改为 JS 手势平移表格本体。overflow 保持 visible，thead 即可
+     原生吸顶（由浏览器合成器处理，上下滚动零延迟、不再跳动）；
+     clip-path 裁掉向右多出的 70px，touch-action:pan-y 允许纵向原生滚动 */
+  .table-wrap {
+    overflow: visible;
+    touch-action: pan-y;
+    clip-path: inset(0 round 12px);
+  }
   .song-table {
     min-width: calc(100% + 70px);   /* 刚好多出付费礼物一列 */
     width: 100%;
     table-layout: fixed;
     font-size: 12.5px;
+    /* iOS Safari 下 border-collapse:collapse 会导致 th 的 sticky 失效 */
+    border-collapse: separate;
+    border-spacing: 0;
+    transform: translateX(var(--drag-x, 0px));
   }
   .song-table thead th { padding: 8px; font-size: 12px; }
   .song-table td { padding: 7px 8px; overflow: hidden; }
+  /* separate 模式下行边框需落在 td 上 */
+  .song-table tbody td { border-bottom: 1px solid rgba(38, 43, 58, 0.55); }
+  .song-table tbody tr:last-child td { border-bottom: none; }
   .th-note, .td-note, .th-lang, .td-lang, .th-link, .td-link { display: none; }
   /* 固定列宽：# / 类型 / 付费礼物 定宽，歌名占剩余空间 */
   .song-table th:nth-child(1) { width: 26px; }
@@ -440,13 +455,13 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   .song-table th:nth-child(6) { width: 66px; }
   .song-table th:nth-child(3) { width: 27%; }
 
-  /* 表头吸顶改由 JS 反向位移实现（横滚容器会让 sticky 失效）：
-     这里只负责外观与图层顺序 */
-  .song-table thead { position: relative; z-index: 45; }
+  /* 表头原生吸顶：紧贴吸顶搜索框正下方 */
   .song-table thead th {
-    padding: 8px;
-    font-size: 12px;
+    position: sticky;
+    top: var(--sticky-h, 0px);
+    z-index: 45;
     background: #1a1e2c;
+    border-bottom: 1px solid var(--border);
   }
 
   /* 长歌名/长歌手名允许换行，避免撑破固定布局 */

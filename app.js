@@ -150,33 +150,49 @@ mobileMq.addEventListener("change", () => {
 });
 window.addEventListener("resize", updateStickyHeight);
 
-/* 移动端表头吸顶（JS 反向位移）：
-   表格容器横向滚动后 sticky 以容器为基准会失效，
-   改为滚动时计算位移量，把 thead 往下推、钉在搜索框正下方 */
-const theadEl = document.querySelector(".song-table thead");
+/* ================= 移动端横拖查看「付费礼物」列 =================
+   移动端不用 overflow-x:auto 横滚容器（它会让 thead 的 sticky 以容器为
+   基准而失效），改为 JS 手势平移表格本体。表头因此可以原生 sticky 吸顶，
+   由浏览器合成器直接处理，上下滚动时不会再跟着跳动 */
+const tableWrap = document.querySelector(".table-wrap");
+const songTable = document.querySelector(".song-table");
+const MAX_DRAG = 70;          // 付费礼物列宽度（与 CSS 中多出的 70px 对应）
+let dragX = 0;                // 当前左移量：-MAX_DRAG ~ 0
+let tStartX = 0, tStartY = 0, startDragX = 0, dragAxis = null;
 
-function updateTheadPin() {
-  if (!theadEl) return;
-  if (!mobileMq.matches) {          // 桌面/平板走原生 sticky 逻辑
-    if (theadEl.style.transform) theadEl.style.transform = "";
-    return;
-  }
-  const table = theadEl.closest(".song-table");
-  if (!table) return;
-  const tRect = table.getBoundingClientRect();
-  if (!tRect.height) return;        // 列表未渲染
-  const stickyH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--sticky-h")) || 0;
-  let delta = stickyH - tRect.top;  // 表头需要下移的距离
-  const maxDelta = tRect.height - theadEl.offsetHeight;
-  if (delta <= 0 || delta >= maxDelta) {
-    // 表格未滚到 / 已滚过：恢复原位
-    if (theadEl.style.transform) theadEl.style.transform = "";
-  } else {
-    theadEl.style.transform = "translateY(" + delta + "px)";
-  }
+function applyDragX() {
+  songTable.style.setProperty("--drag-x", dragX + "px");
 }
-window.addEventListener("scroll", updateTheadPin, { passive: true });
-window.addEventListener("resize", updateTheadPin);
+
+tableWrap.addEventListener("touchstart", e => {
+  if (!mobileMq.matches) return;
+  const t = e.touches[0];
+  tStartX = t.clientX; tStartY = t.clientY;
+  startDragX = dragX; dragAxis = null;
+  songTable.style.transition = "none";
+}, { passive: true });
+
+tableWrap.addEventListener("touchmove", e => {
+  if (!mobileMq.matches || dragAxis === "y") return;
+  const t = e.touches[0];
+  const dx = t.clientX - tStartX, dy = t.clientY - tStartY;
+  if (dragAxis === null) {
+    if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;  // 等意图明确再接管
+    dragAxis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
+    if (dragAxis === "y") return;                       // 纵向交给页面原生滚动
+  }
+  e.preventDefault();                                  // 横向拖动时不滚动页面
+  dragX = Math.min(0, Math.max(-MAX_DRAG, startDragX + dx));
+  applyDragX();
+}, { passive: false });
+
+tableWrap.addEventListener("touchend", () => {
+  if (!mobileMq.matches || dragAxis !== "x") return;
+  dragAxis = null;
+  songTable.style.transition = "transform 0.18s ease-out";  // 松手吸附
+  dragX = dragX < -MAX_DRAG / 2 ? -MAX_DRAG : 0;
+  applyDragX();
+});
 
 /* ================= 点击复制歌名 ================= */
 function copyText(text) {
@@ -263,7 +279,6 @@ function render() {
   emptyEl.hidden = result.length > 0;
   lastResult = result;
   bodyEl.innerHTML = "";
-  updateTheadPin();   // 重渲染后表头钉住状态需立即校正
 
   result.forEach((song, i) => {
     const tr = document.createElement("tr");
