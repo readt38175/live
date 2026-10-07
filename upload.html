@@ -488,14 +488,20 @@ function rowsToSongs(rows) {
 const zhCollator = new Intl.Collator("zh-Hans-CN", { numeric: true });
 const LANG_ORDER = ["中文", "日文"];
 const TYPE_ORDER = ["中文", "JPOP", "动画/游戏插曲", "动画·游戏插曲", "VOCALOID/ボカロ", "昭和老歌"];
+// 日文部分前置歌手（按此顺序排最前，其余歌手仍按拼音）
+const ARTIST_PRIORITY = ["ずっと真夜中でいいのに。", "夜鹿/ヨルシカ", "夜游/YOASOBI"];
 
 function sortSonglist(arr) {
   const langRank = s => { const i = LANG_ORDER.indexOf(s.language); return i === -1 ? LANG_ORDER.length : i; };
   const typeRank = s => { const i = TYPE_ORDER.indexOf(s.type); return i === -1 ? TYPE_ORDER.length : i; };
+  const prioRank = s => { const i = ARTIST_PRIORITY.indexOf(s.artist || ""); return i === -1 ? ARTIST_PRIORITY.length : i; };
   arr.sort((a, b) =>
     langRank(a) - langRank(b) ||
     typeRank(a) - typeRank(b) ||
-    zhCollator.compare(a.artist || "", b.artist || "") ||
+    prioRank(a) - prioRank(b) ||
+    (prioRank(a) < ARTIST_PRIORITY.length
+      ? zhCollator.compare(a.title || "", b.title || "")
+      : zhCollator.compare(a.artist || "", b.artist || "")) ||
     zhCollator.compare(a.title || "", b.title || ""));
   return arr;
 }
