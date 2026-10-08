@@ -156,8 +156,11 @@ window.addEventListener("resize", updateStickyHeight);
    由浏览器合成器直接处理，上下滚动时不会再跟着跳动 */
 const tableWrap = document.querySelector(".table-wrap");
 const songTable = document.querySelector(".song-table");
-const MAX_DRAG = 70;          // 付费礼物列宽度（与 CSS 中多出的 70px 对应）
-let dragX = 0;                // 当前左移量：-MAX_DRAG ~ 0
+/* 拖动范围动态测量：表格比容器宽多少就能拖多少（付费礼物列 + 类型/序号列加宽） */
+function maxDrag() {
+  return Math.max(0, Math.round(songTable.getBoundingClientRect().width - tableWrap.clientWidth));
+}
+let dragX = 0;                // 当前左移量：-maxDrag() ~ 0
 let tStartX = 0, tStartY = 0, startDragX = 0, dragAxis = null;
 
 function applyDragX() {
@@ -182,7 +185,7 @@ tableWrap.addEventListener("touchmove", e => {
     if (dragAxis === "y") return;                       // 纵向交给页面原生滚动
   }
   e.preventDefault();                                  // 横向拖动时不滚动页面
-  dragX = Math.min(0, Math.max(-MAX_DRAG, startDragX + dx));
+  dragX = Math.min(0, Math.max(-maxDrag(), startDragX + dx));
   applyDragX();
 }, { passive: false });
 
@@ -190,7 +193,8 @@ tableWrap.addEventListener("touchend", () => {
   if (!mobileMq.matches || dragAxis !== "x") return;
   dragAxis = null;
   songTable.style.transition = "transform 0.18s ease-out";  // 松手吸附
-  dragX = dragX < -MAX_DRAG / 2 ? -MAX_DRAG : 0;
+  const M = maxDrag();
+  dragX = dragX < -M / 2 ? -M : 0;
   applyDragX();
 });
 

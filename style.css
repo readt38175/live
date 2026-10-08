@@ -434,7 +434,7 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
     clip-path: inset(0 round 12px);
   }
   .song-table {
-    min-width: calc(100% + 70px);   /* 刚好多出付费礼物一列 */
+    min-width: calc(100% + 120px);  /* 多出：付费礼物列 + 类型列加宽 + 序号列加宽 */
     width: 100%;
     table-layout: fixed;
     font-size: 12.5px;
@@ -449,11 +449,14 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   .song-table tbody td { border-bottom: 1px solid rgba(38, 43, 58, 0.55); }
   .song-table tbody tr:last-child td { border-bottom: none; }
   .th-note, .td-note, .th-lang, .td-lang, .th-link, .td-link { display: none; }
-  /* 固定列宽：# / 类型 / 付费礼物 定宽，歌名占剩余空间 */
-  .song-table th:nth-child(1) { width: 26px; }
-  .song-table th:nth-child(4) { width: 76px; }
+  /* 固定列宽：# / 类型 / 付费礼物 定宽，歌名占剩余空间。
+     序号 42px 完整容纳三位数（fixed 布局列宽含 padding）；
+     类型 122px 完整放下最长标签「动画/游戏插曲」「VOCALOID/ボカロ」，
+     放不下整屏的部分靠横拖查看 */
+  .song-table th:nth-child(1) { width: 42px; }
+  .song-table th:nth-child(4) { width: 122px; }
   .song-table th:nth-child(6) { width: 66px; }
-  .song-table th:nth-child(3) { width: 27%; }
+  .song-table th:nth-child(3) { width: 25%; }
 
   /* 表头原生吸顶：紧贴吸顶搜索框正下方 */
   .song-table thead th {
@@ -467,12 +470,10 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   /* 长歌名/长歌手名允许换行，避免撑破固定布局 */
   .td-title, .td-artist { overflow-wrap: anywhere; white-space: normal; }
   .td-title { min-width: 0; }
+  /* 移动端类型标签完整显示（列宽已足够），不用省略号；
+     放不下的部分由表格整体横拖查看 */
   .type-tag {
     display: inline-block;
-    max-width: 100%;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     vertical-align: middle;
     padding: 1px 6px;
     font-size: 10.5px;
