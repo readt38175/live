@@ -490,6 +490,8 @@ const LANG_ORDER = ["中文", "日文"];
 const TYPE_ORDER = ["中文", "JPOP", "动画/游戏插曲", "动画·游戏插曲", "VOCALOID/ボカロ", "昭和老歌"];
 // 日文部分前置歌手（按此顺序排最前，其余歌手仍按拼音）
 const ARTIST_PRIORITY = ["ずっと真夜中でいいのに。", "夜鹿/ヨルシカ", "夜游/YOASOBI"];
+// 歌手手动定位：key 的歌曲固定排在 value 歌手之后（拼音序之外的例外）
+const ARTIST_PIN_AFTER = { "A2A组合": "ChiliChill" };
 
 function sortSonglist(arr) {
   const langRank = s => { const i = LANG_ORDER.indexOf(s.language); return i === -1 ? LANG_ORDER.length : i; };
@@ -503,6 +505,22 @@ function sortSonglist(arr) {
       ? zhCollator.compare(a.title || "", b.title || "")
       : zhCollator.compare(a.artist || "", b.artist || "")) ||
     zhCollator.compare(a.title || "", b.title || ""));
+  applyArtistPin(arr);
+  return arr;
+}
+
+// 把 ARTIST_PIN_AFTER 中指定的歌手整体移到锚点歌手之后（保持其它顺序不变）
+function applyArtistPin(arr) {
+  for (const [artist, anchor] of Object.entries(ARTIST_PIN_AFTER)) {
+    const moving = arr.filter(s => (s.artist || "") === artist);
+    if (!moving.length) continue;
+    const base = arr.filter(s => (s.artist || "") !== artist);
+    let last = -1;
+    base.forEach((s, i) => { if ((s.artist || "") === anchor) last = i; });
+    if (last === -1) continue;
+    arr.length = 0;
+    arr.push(...base.slice(0, last + 1), ...moving, ...base.slice(last + 1));
+  }
   return arr;
 }
 
