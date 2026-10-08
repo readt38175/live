@@ -3,10 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>歌单更新 - 芙芙的歌单</title>
+  <title>歌单更新·测试版 - 芙芙的歌单</title>
   <link rel="icon" href="favicon.ico?v=4" type="image/x-icon">
+  <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/package/dist/xlsx.full.min.js"></script>
   <style>
+    /* ============ 主页面样式（与 upload.html 一致） ============ */
     * { box-sizing: border-box; margin: 0; padding: 0; }
     :root {
       --primary: #7ce3cf; --primary-dim: rgba(124,227,207,.14);
@@ -76,7 +78,7 @@
     }
     #preview.ok { color: var(--text); }
     #preview.err { color: #ff8f8f; }
-    .radio-row { display: flex; gap: 22px; margin: 12px 0; font-size: 13.5px; color: var(--muted); }
+    .radio-row { display: flex; gap: 22px; margin: 12px 0; font-size: 13.5px; color: var(--muted); flex-wrap: wrap; }
     .radio-row label { display: flex; align-items: center; gap: 6px; cursor: pointer; }
     .radio-row input { accent-color: var(--primary); }
     details { border: 1px solid var(--border); border-radius: 12px; margin-bottom: 14px; background: var(--card); }
@@ -112,18 +114,101 @@
     .mode-replace { font-size: 12.5px; color: var(--muted); }
     .mode-replace input { accent-color: #b06a6a; }
     @media (max-width: 560px) { .form-grid { grid-template-columns: 1fr; } }
+
+    /* ============ 可视化编辑器（全屏覆盖层，外观同歌单页） ============ */
+    #editorOverlay {
+      position: fixed; inset: 0; z-index: 1000;
+      background: var(--bg);
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    #editorOverlay .container { padding-bottom: 8px; }
+    #editorOverlay .header { margin-bottom: 20px; }
+    #editorOverlay .header .subtitle b { color: var(--primary); font-weight: 600; }
+    #editorOverlay .song-table { min-width: 1180px; }   /* 编辑列更多，桌面横滚 */
+    /* 拖动手柄列 */
+    .ed-handle {
+      width: 36px; min-width: 36px; text-align: center;
+      color: var(--muted); font-size: 15px; cursor: grab; user-select: none;
+      transition: color .15s;
+    }
+    .ed-handle:hover { color: var(--primary); }
+    .ed-handle:active { cursor: grabbing; }
+    tr.ed-row.dragging { opacity: .35; }
+    tr.ed-row.drop-before { box-shadow: inset 0 2px 0 var(--primary); }
+    tr.ed-row.drop-after  { box-shadow: inset 0 -2px 0 var(--primary); }
+    /* 可编辑单元格 */
+    td.ed-cell {
+      cursor: text; min-width: 60px;
+      outline: none; border: 1px dashed transparent; border-radius: 6px;
+      transition: border-color .15s, background .15s;
+    }
+    td.ed-cell:hover { border-color: rgba(124,227,207,.35); }
+    td.ed-cell:focus {
+      border-color: var(--primary); background: rgba(124,227,207,.07);
+      box-shadow: 0 0 0 2px var(--primary-dim);
+    }
+    td.ed-cell:empty::before { content: "—"; color: rgba(154,161,178,.45); }
+    td.ed-cell[data-field="title"]:empty::before { content: "填写歌名"; color: rgba(154,161,178,.45); }
+    /* 付费列下拉 */
+    .ed-paid {
+      padding: 4px 6px; font-size: 12.5px; border-radius: 8px;
+      background: var(--bg); color: var(--text); border: 1px solid var(--border);
+      cursor: pointer; outline: none; font-family: inherit;
+    }
+    .ed-paid:focus { border-color: var(--primary); }
+    /* 行操作按钮 */
+    .ed-ops { width: 64px; min-width: 64px; white-space: nowrap; }
+    .ed-ops button {
+      width: 26px; height: 26px; margin-right: 4px;
+      border-radius: 8px; border: 1px solid var(--border);
+      background: transparent; color: var(--muted);
+      cursor: pointer; font-size: 14px; line-height: 1;
+      transition: all .15s; font-family: inherit;
+    }
+    .ed-ops button:hover { border-color: var(--primary); color: var(--primary); }
+    .ed-ops button.ed-del:hover { border-color: #ff8f8f; color: #ff8f8f; }
+    /* 底部推送栏（sticky 常驻） */
+    .ed-bottom {
+      position: sticky; bottom: 0; z-index: 80;
+      background: rgba(11,13,18,.97);
+      border-top: 1px solid var(--border);
+      margin-top: 20px; padding: 14px 16px 16px;
+    }
+    .ed-bottom .ed-keys { display: flex; gap: 12px; margin-bottom: 10px; }
+    .ed-bottom .ed-keys .key-row { flex: 1; }
+    .ed-bottom .key-row input { padding: 9px 66px 9px 12px; font-size: 13px; }
+    .ed-bottom .key-row .eye { font-size: 12px; }
+    .ed-bottom .push-bar { margin: 0; }
+    .ed-bottom .push-bar .btn { padding: 11px 0; font-size: 13.5px; }
+    .ed-bottom .msg { margin-top: 8px; min-height: 18px; font-size: 12.5px; }
+    .ed-tip { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.6; }
+    #selftestOut {
+      font-family: Consolas, monospace; font-size: 12px; color: var(--primary);
+      padding: 8px 12px; white-space: pre-wrap; word-break: break-all;
+    }
   </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>歌单更新</h1>
+  <h1>歌单更新 · 测试版</h1>
 
   <div class="steps">
     <b>操作步骤：</b><br>
     1. 填入你的个人密钥和 GitHub Token（双验证）<br>
     2. 选择导入方式（Excel表格 或 手动填写，二选一）<br>
     3. 数据会自动转换成预览<br>
-    4. 确认内容无误，点击提交同步线上歌单与更新日期
+    4. 确认内容无误，点击提交同步线上歌单与更新日期<br>
+    5. 或点下方按钮进入 <b>可视化编辑器</b>（像 Excel 一样直接改歌单）
+  </div>
+
+  <div class="card" style="text-align:center">
+    <button class="btn btn-accent" id="openEditorBtn" type="button"
+            style="padding:14px 34px;font-size:15px">🎬 打开可视化编辑器</button>
+    <p class="hint" style="margin-top:10px">
+      与歌单页外观一致，支持：点击单元格直接改字 · 任意位置插入行 · 删除行 ·
+      拖动整行调整顺序（# 序号自动同步）· 底部填密钥和 Token 直接推送 GitHub
+    </p>
   </div>
 
   <div class="card">
@@ -285,7 +370,81 @@
     <p class="msg" id="pushMsg"></p>
   </div>
 
-  <p class="foot">芙芙的歌单 · 管理页</p>
+  <p class="foot">芙芙的歌单 · 管理页（测试版 upload1）</p>
+</div>
+
+<!-- ==================== 可视化编辑器（全屏覆盖层） ==================== -->
+<div id="editorOverlay" hidden>
+  <div class="container">
+    <header class="header">
+      <img class="avatar" src="avatar.png" alt="" onerror="this.style.display='none'">
+      <h1 id="edTitle">芙芙的歌单</h1>
+      <p class="subtitle">可视化编辑模式 · <b>点击文字直接改</b> · 拖 ⠿ 调整顺序 · ✕ 删除 · ＋ 下方插行</p>
+    </header>
+
+    <div class="sticky-sentinel" id="edSentinel" aria-hidden="true"></div>
+
+    <div class="sticky-area" id="edSticky">
+      <div class="toolbar">
+        <div class="toolbar-left">
+          <button id="edAddEndBtn" class="tool-btn" type="button">＋ 末尾添加歌曲</button>
+          <button id="edSortBtn" class="tool-btn" type="button">⇅ 自动分类排序</button>
+          <button id="edResetBtn" class="tool-btn tool-btn-accent" type="button">↩ 放弃修改</button>
+          <button id="edCloseBtn" class="tool-btn tool-btn-accent" type="button">✓ 应用修改并返回</button>
+        </div>
+        <span id="edCount" class="count-info"></span>
+      </div>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="edSearch" placeholder="筛选歌曲（筛选时不可拖动排序）…" aria-label="搜索">
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table class="song-table ed-table">
+        <thead>
+          <tr>
+            <th class="ed-handle-th"></th>
+            <th class="th-idx">#</th>
+            <th>歌名</th>
+            <th>歌名(中文)</th>
+            <th>歌手</th>
+            <th>类型</th>
+            <th>语言</th>
+            <th>付费</th>
+            <th>付费礼物</th>
+            <th>备注</th>
+            <th class="ed-ops-th"></th>
+          </tr>
+        </thead>
+        <tbody id="edBody"></tbody>
+      </table>
+    </div>
+    <p class="empty-tip" id="edEmpty" hidden>没有匹配的歌曲 🎶</p>
+
+    <!-- 底部：密钥 + Token + 推送 -->
+    <div class="ed-bottom">
+      <div class="ed-keys">
+        <div class="key-row">
+          <input type="password" id="edKey" placeholder="个人密钥" autocomplete="off">
+          <button class="eye" id="edEyeKey" type="button">显示</button>
+        </div>
+        <div class="key-row">
+          <input type="password" id="edToken" placeholder="GitHub Token（ghp_...）" autocomplete="off">
+          <button class="eye" id="edEyeToken" type="button">显示</button>
+        </div>
+      </div>
+      <div class="push-bar">
+        <button class="btn btn-ghost" id="edDownloadBtn" type="button">下载 songs.json</button>
+        <button class="btn btn-accent" id="edApplyBtn" type="button">应用修改到预览区</button>
+        <button class="btn btn-primary" id="edPushBtn" type="button">推送更新到 GitHub</button>
+      </div>
+      <p class="msg" id="edMsg">修改仅存在本页，需推送才会生效；「应用修改到预览区」会把结果带回管理页。</p>
+      <p class="ed-tip">提示：拖动行首 ⠿ 到目标位置松手即可整行移动；# 序号随位置自动同步，无需手动改。</p>
+    </div>
+
+    <div id="selftestOut"></div>
+  </div>
 </div>
 
 <script>
@@ -325,7 +484,6 @@ function checkKey() {
   return keyOk;
 }
 function verifyState() {
-  // 双验证状态提示
   if (keyOk && tokenOk()) {
     pushMsg.className = "msg ok";
     pushMsg.textContent = "密钥 + Token 验证通过，可以推送 ✔";
@@ -424,18 +582,15 @@ function parseTableText(raw) {
 
 function parseJsonText(raw) {
   let text = raw.trim();
-  // 去掉可能误粘贴的 markdown 代码块标记
   text = text.replace(/^```(?:json)?\s*/i, "").replace(/```\s*$/, "");
-  // 常见中文标点自动纠错：，；：" （在 JSON 结构里不会出现在无引号位置，直接全量替换安全）
   const fixed = text
-    .replace(/，/g, ",")   // 中文逗号
-    .replace(/：/g, ":")   // 中文冒号
+    .replace(/，/g, ",")
+    .replace(/：/g, ":")
     .replace(/；/g, ";");
   let data;
   try {
     data = JSON.parse(fixed);
   } catch (e) {
-    // 纠错后仍失败则报出更友好的提示
     const m = e.message.match(/position (\d+)/);
     const pos = m ? Number(m[1]) : -1;
     const near = pos > -1 ? `（出错位置附近的内容：…${fixed.slice(Math.max(0, pos - 25), pos + 15)}…）` : "";
@@ -445,7 +600,6 @@ function parseJsonText(raw) {
   return arr.map(normalize);
 }
 
-/* 表头中文列名 -> 字段（SheetJS 用） */
 function rowsToSongs(rows) {
   if (!rows.length) throw new Error("Excel 内容为空");
   const header = rows[0].map(h => String(h || "").trim());
@@ -488,9 +642,7 @@ function rowsToSongs(rows) {
 const zhCollator = new Intl.Collator("zh-Hans-CN", { numeric: true });
 const LANG_ORDER = ["中文", "日文"];
 const TYPE_ORDER = ["中文", "JPOP", "动画/游戏插曲", "动画·游戏插曲", "VOCALOID/ボカロ", "昭和老歌"];
-// 日文部分前置歌手（按此顺序排最前，其余歌手仍按拼音）
 const ARTIST_PRIORITY = ["ずっと真夜中でいいのに。", "夜鹿/ヨルシカ", "夜游/YOASOBI"];
-// 歌手手动定位：key 的歌曲固定排在 value 歌手之后（拼音序之外的例外）
 const ARTIST_PIN_AFTER = { "A2A组合": "ChiliChill" };
 
 function sortSonglist(arr) {
@@ -509,7 +661,6 @@ function sortSonglist(arr) {
   return arr;
 }
 
-// 把 ARTIST_PIN_AFTER 中指定的歌手整体移到锚点歌手之后（保持其它顺序不变）
 function applyArtistPin(arr) {
   for (const [artist, anchor] of Object.entries(ARTIST_PIN_AFTER)) {
     const moving = arr.filter(s => (s.artist || "") === artist);
@@ -595,12 +746,10 @@ excelFile.addEventListener("change", async () => {
   excelFile.value = "";
 });
 
-/* ================= 手动填写表单（自动生成 JSON） ================= */
-const fFields = ["fTitle", "fArtist", "fTitleZh", "fType", "fGift", "fNote"];
+/* ================= 手动填写表单 ================= */
 const fType = $("fType"), fLang = $("fLang");
-let formQueue = [];   // 「加入列表」累积的歌曲
+let formQueue = [];
 
-// 类型联动语言：中文→中文，其余默认日文
 fType.addEventListener("input", () => {
   const t = fType.value.trim();
   if (t === "中文") fLang.value = "中文";
@@ -636,7 +785,7 @@ $("addSongBtn").addEventListener("click", () => {
 $("formImportBtn").addEventListener("click", async () => {
   const songs = formQueue.slice();
   const cur = formCurrentSong();
-  if (cur.title && cur.artist) songs.push(cur);   // 表单里还填着一首没加列表的，一并导入
+  if (cur.title && cur.artist) songs.push(cur);
   if (!songs.length) { formHint("❌ 请先填写歌名和歌手（或点「加入列表」累积多首）", true); return; }
   try {
     await acceptSongs(songs, "手动填写");
@@ -647,13 +796,12 @@ $("formImportBtn").addEventListener("click", async () => {
   }
 });
 
-/* ================= 批量填入（多行歌名 - 歌手） ================= */
+/* ================= 批量填入 ================= */
 $("batchImportBtn").addEventListener("click", async () => {
   const raw = $("batchInput").value;
   const lines = raw.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
   if (!lines.length) { formHint("❌ 请先在批量填入框里粘贴歌曲，每行一首：歌名 - 歌手", true); return; }
 
-  // 共同属性取表单当前选择
   const shared = {
     type: fType.value.trim(),
     language: fLang.value,
@@ -666,7 +814,6 @@ $("batchImportBtn").addEventListener("click", async () => {
   const songs = [];
   const errors = [];
   lines.forEach((line, i) => {
-    // 分隔符：Tab / 中划线 / 全角破折号 / 空格 surrounded
     let parts = null;
     if (line.includes("\t")) parts = line.split("\t");
     else {
@@ -753,7 +900,7 @@ function updateBgPreview() {
   if (t === "color") el.style.background = $("bgColorInput").value;
   else if (t === "image" && resolvedImage()) el.style.background = `url("${resolvedImage()}") center/cover`;
   else el.style.background = "#0b0d12";
-  $("bgPreviewName").textContent = ($("siteNameInput").value || "站点名称") ;
+  $("bgPreviewName").textContent = ($("siteNameInput").value || "站点名称");
 }
 ["bgType", "bgColorInput", "bgImageInput"].forEach(id =>
   $(id).addEventListener("input", () => { syncBgFields(); updateBgPreview(); }));
@@ -776,7 +923,6 @@ function syncSiteFromUI() {
 }
 
 /* ================= GitHub 推送 ================= */
-/* 仓库名自动纠错：兼容粘贴完整网址、带 .git 后缀等情况 */
 function normalizeRepo(v) {
   v = v.trim().replace(/\.git$/i, "");
   const m = v.match(/github\.com[/:]([^/\s]+)\/([^/\s?#]+)/i);
@@ -857,6 +1003,409 @@ pushBtn.addEventListener("click", async () => {
 
 /* ================= 启动 ================= */
 loadSiteConfig();
+
+/* ============================================================
+   可视化编辑器（Excel 式编辑）
+   ============================================================ */
+const edOverlay = $("editorOverlay");
+const edBody = $("edBody");
+const edSearch = $("edSearch");
+const edCount = $("edCount");
+const edMsg = $("edMsg");
+const edEmpty = $("edEmpty");
+
+let edSongs = [];        // 编辑中的数据（模型）
+let edOriginal = "";     // 打开时的快照（放弃修改用）
+let edDirty = false;
+
+function edSetMsg(text, cls) {
+  edMsg.textContent = text;
+  edMsg.className = "msg" + (cls ? " " + cls : "");
+}
+function edMarkDirty() {
+  if (!edDirty) { edDirty = true; edRender(); }
+  else edUpdateCount();
+}
+
+/* ---------- 打开 / 关闭 ---------- */
+$("openEditorBtn").addEventListener("click", openEditor);
+async function openEditor() {
+  edOverlay.hidden = false;
+  document.body.style.overflow = "hidden";
+  $("edTitle").textContent = (siteConfig.siteName || "芙芙的歌单") + " · 编辑模式";
+  edSetMsg("正在加载线上歌单…");
+  try {
+    const res = await fetch("songs.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("songs.json 读取失败（" + res.status + "）");
+    const data = await res.json();
+    edSongs = data.map(normalize);
+    edOriginal = JSON.stringify(edSongs);
+    edDirty = false;
+    edRender();
+    edSetMsg(`已加载 ${edSongs.length} 首。修改仅存在本页，推送后才会生效。`);
+  } catch (e) {
+    edSetMsg("❌ " + e.message, "err");
+  }
+}
+$("edCloseBtn").addEventListener("click", () => {
+  if (edDirty && !window.confirm("有未应用的修改，确定返回？（修改仍保留在本页，重新打开编辑器会丢失）")) return;
+  closeEditor();
+});
+function closeEditor() {
+  edOverlay.hidden = true;
+  document.body.style.overflow = "";
+}
+
+/* ---------- 渲染 ---------- */
+function edRender() {
+  const q = edSearch.value.trim().toLowerCase();
+  const filtering = q.length > 0;
+  edBody.innerHTML = "";
+  let shown = 0;
+  edSongs.forEach((s, i) => {
+    if (filtering && !(s.title + " " + s.titleZh + " " + s.artist).toLowerCase().includes(q)) return;
+    shown++;
+    const tr = document.createElement("tr");
+    tr.className = "ed-row";
+    tr.dataset.idx = i;
+
+    // 拖动手柄
+    const hd = document.createElement("td");
+    hd.className = "ed-handle";
+    hd.textContent = "⠿";
+    hd.draggable = !filtering;
+    hd.title = filtering ? "筛选时不可拖动" : "按住拖动调整顺序";
+    tr.appendChild(hd);
+
+    // # 序号（自动同步）
+    const idx = document.createElement("td");
+    idx.className = "td-idx";
+    idx.textContent = i + 1;
+    tr.appendChild(idx);
+
+    // 可编辑文本列
+    const fields = [
+      ["title", "td-title"], ["titleZh", ""], ["artist", "td-artist"],
+      ["type", ""], ["language", "td-lang"], ["gift", ""], ["note", "td-note"]
+    ];
+    for (const [f, cls] of fields) {
+      const td = document.createElement("td");
+      td.className = ("ed-cell " + cls).trim();
+      td.dataset.field = f;
+      td.contentEditable = "plaintext-only";
+      td.spellcheck = false;
+      td.textContent = s[f];
+      tr.appendChild(td);
+    }
+
+    // 是否付费（下拉）
+    const pd = document.createElement("td");
+    const sel = document.createElement("select");
+    sel.className = "ed-paid";
+    for (const v of ["否", "是"]) {
+      const o = document.createElement("option");
+      o.value = v; o.textContent = v;
+      if (s.paid === v) o.selected = true;
+      sel.appendChild(o);
+    }
+    sel.addEventListener("change", () => { edSongs[i].paid = sel.value; edMarkDirty(); });
+    pd.appendChild(sel);
+    tr.appendChild(pd);
+
+    // 行操作：＋ 插入 / ✕ 删除
+    const ops = document.createElement("td");
+    ops.className = "ed-ops";
+    const ins = document.createElement("button");
+    ins.type = "button"; ins.textContent = "＋"; ins.title = "在此行下方插入空行";
+    ins.addEventListener("click", () => edInsertRow(i));
+    const del = document.createElement("button");
+    del.type = "button"; del.className = "ed-del"; del.textContent = "✕"; del.title = "删除此行";
+    del.addEventListener("click", () => edDeleteRow(i));
+    ops.appendChild(ins); ops.appendChild(del);
+    tr.appendChild(ops);
+
+    edBody.appendChild(tr);
+  });
+  edEmpty.hidden = shown > 0;
+  edUpdateCount(shown, filtering);
+}
+function edUpdateCount(shown, filtering) {
+  if (shown == null) {
+    const q = edSearch.value.trim().toLowerCase();
+    filtering = q.length > 0;
+    shown = filtering
+      ? edSongs.filter(s => (s.title + " " + s.titleZh + " " + s.artist).toLowerCase().includes(q)).length
+      : edSongs.length;
+  }
+  edCount.textContent = `共 ${edSongs.length} 首` +
+    (filtering ? ` · 匹配 ${shown} 首` : "") +
+    (edDirty ? " · 有未保存修改" : "");
+}
+
+/* ---------- 单元格编辑（事件委托） ---------- */
+edBody.addEventListener("input", e => {
+  const td = e.target.closest("td.ed-cell");
+  if (!td) return;
+  const tr = td.closest("tr.ed-row");
+  const i = Number(tr && tr.dataset.idx);
+  if (!(i >= 0 && i < edSongs.length)) return;
+  edSongs[i][td.dataset.field] = td.textContent.trim();
+  edMarkDirty();
+});
+// 粘贴时只保留纯文本
+edBody.addEventListener("paste", e => {
+  const td = e.target.closest("td.ed-cell");
+  if (!td) return;
+  e.preventDefault();
+  const text = (e.clipboardData || window.clipboardData).getData("text/plain").replace(/\s*\r?\n\s*/g, " ");
+  document.execCommand("insertText", false, text);
+});
+
+/* ---------- 增删行 ---------- */
+function blankSong() {
+  return { title: "", titleZh: "", artist: "", type: "", language: "", paid: "否", gift: "", note: "", link: "" };
+}
+function edInsertRow(belowIdx) {
+  edSongs.splice(belowIdx + 1, 0, blankSong());
+  edDirty = true;
+  edRender();
+  // 聚焦新行的歌名单元格
+  const tr = edBody.querySelector(`tr[data-idx="${belowIdx + 1}"]`);
+  if (tr) {
+    const cell = tr.querySelector('td[data-field="title"]');
+    if (cell) { cell.focus(); tr.scrollIntoView({ block: "nearest" }); }
+  }
+  edSetMsg(`已在第 ${belowIdx + 2} 行插入空行，直接点击单元格填写内容。`);
+}
+function edDeleteRow(idx) {
+  const s = edSongs[idx];
+  if (!window.confirm(`删除第 ${idx + 1} 首：${s.title || "（空行）"}？`)) return;
+  edSongs.splice(idx, 1);
+  edDirty = true;
+  edRender();
+  edSetMsg(`已删除「${s.title || "空行"}」，# 序号已自动同步。`);
+}
+$("edAddEndBtn").addEventListener("click", () => edInsertRow(edSongs.length - 1));
+
+/* ---------- 整行拖动 ---------- */
+let dragIdx = -1, dropIdx = -1, dropPos = "";
+function edClearDropMark() {
+  edBody.querySelectorAll("tr.ed-row").forEach(r => r.classList.remove("drop-before", "drop-after", "dragging"));
+}
+edBody.addEventListener("dragstart", e => {
+  const h = e.target.closest && e.target.closest(".ed-handle");
+  if (!h) { e.preventDefault(); return; }
+  dragIdx = Number(h.closest("tr.ed-row").dataset.idx);
+  h.closest("tr.ed-row").classList.add("dragging");
+  e.dataTransfer.effectAllowed = "move";
+  try { e.dataTransfer.setData("text/plain", String(dragIdx)); } catch (_) {}
+});
+edBody.addEventListener("dragover", e => {
+  if (dragIdx < 0) return;
+  const tr = e.target.closest && e.target.closest("tr.ed-row");
+  if (!tr) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = "move";
+  const r = tr.getBoundingClientRect();
+  const before = e.clientY < r.top + r.height / 2;
+  const idx = Number(tr.dataset.idx);
+  if (idx !== dropIdx || (before ? "before" : "after") !== dropPos) {
+    edClearDropMark();
+    dropIdx = idx;
+    dropPos = before ? "before" : "after";
+    tr.classList.add(before ? "drop-before" : "drop-after");
+  }
+});
+edBody.addEventListener("drop", e => {
+  e.preventDefault();
+  if (dragIdx < 0 || dropIdx < 0) { edResetDrag(); return; }
+  edMoveRow(dragIdx, dropIdx, dropPos);
+  edResetDrag();
+});
+edBody.addEventListener("dragend", edResetDrag);
+function edResetDrag() { dragIdx = -1; dropIdx = -1; dropPos = ""; edClearDropMark(); }
+function edMoveRow(from, toIdx, pos) {
+  if (from === toIdx && pos === "after") { return; }
+  const [item] = edSongs.splice(from, 1);
+  let at = pos === "before" ? toIdx : toIdx + 1;
+  if (from < at) at--;
+  edSongs.splice(at, 0, item);
+  edDirty = true;
+  edRender();
+  edSetMsg(`已把「${item.title || "空行"}」移到第 ${at + 1} 行，# 序号已自动同步。`);
+}
+
+/* ---------- 搜索筛选 / 排序 / 放弃 ---------- */
+edSearch.addEventListener("input", edRender);
+$("edSortBtn").addEventListener("click", () => {
+  sortSonglist(edSongs);
+  edDirty = true;
+  edRender();
+  edSetMsg("已按 语种→类型→歌手→歌名 自动排序（含特殊歌手位置规则）。");
+});
+$("edResetBtn").addEventListener("click", () => {
+  if (!edDirty || window.confirm("放弃全部修改，恢复打开时的状态？")) {
+    edSongs = JSON.parse(edOriginal);
+    edDirty = false;
+    edRender();
+    edSetMsg("已恢复原始数据。");
+  }
+});
+
+/* ---------- 应用 / 下载 / 推送 ---------- */
+function edCleanup() {
+  // 去掉全空行，返回统计
+  const before = edSongs.length;
+  edSongs = edSongs.filter(s => s.title || s.titleZh || s.artist || s.type || s.gift || s.note);
+  return before - edSongs.length;
+}
+function edValidate() {
+  const bad = edSongs.map((s, i) => (!s.title || !s.artist) ? i + 1 : 0).filter(Boolean);
+  if (bad.length) throw new Error(`第 ${bad.join("、")} 行缺少歌名或歌手，请补全后再操作`);
+}
+function edSyncToMain() {
+  const dropped = edCleanup();
+  edValidate();
+  validSongs = JSON.parse(JSON.stringify(edSongs));
+  keyInput.value = $("edKey").value;          // 同步密钥/Token 到管理页
+  $("ghToken").value = $("edToken").value;
+  checkKey();
+  showPreviewOk(`来自可视化编辑器，共 ${validSongs.length} 首` + (dropped ? `（已忽略 ${dropped} 个空行）` : "") + "。", validSongs);
+  return dropped;
+}
+$("edApplyBtn").addEventListener("click", () => {
+  try {
+    const dropped = edSyncToMain();
+    edDirty = false;
+    edSetMsg(`✅ 已应用到下方预览区（${validSongs.length} 首${dropped ? "，忽略空行 " + dropped : ""}）。可关闭编辑器在管理页推送，或直接点「推送更新」。`, "ok");
+  } catch (e) {
+    edSetMsg("❌ " + e.message, "err");
+  }
+});
+$("edDownloadBtn").addEventListener("click", () => {
+  try {
+    const dropped = edCleanup();
+    edValidate();
+    edDirty = true;
+    edRender();
+    const blob = new Blob([JSON.stringify(edSongs, null, 1)], { type: "application/json" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "songs.json";
+    a.click();
+    URL.revokeObjectURL(a.href);
+    edSetMsg(`✅ 已下载 songs.json（${edSongs.length} 首${dropped ? "，忽略空行 " + dropped : ""}）。`, "ok");
+  } catch (e) {
+    edSetMsg("❌ " + e.message, "err");
+  }
+});
+$("edPushBtn").addEventListener("click", async () => {
+  const key = $("edKey").value.trim();
+  const token = $("edToken").value.trim();
+  if (key !== ADMIN_KEY) { edSetMsg("❌ 密钥不正确", "err"); return; }
+  if (!token) { edSetMsg("❌ 请填写 GitHub Token", "err"); return; }
+  const btn = $("edPushBtn");
+  btn.disabled = true; btn.textContent = "推送中…";
+  edSetMsg("正在推送…");
+  try {
+    const dropped = edCleanup();
+    edValidate();
+    validSongs = JSON.parse(JSON.stringify(edSongs));
+    edSongs = JSON.parse(JSON.stringify(validSongs));   // 空行移除同步回编辑器
+    edRender();
+    await pushFile(PRESET_REPO, token, PRESET_BRANCH, "songs.json", validSongs);
+    edDirty = false;
+    edSetMsg(`✅ 推送成功（${validSongs.length} 首${dropped ? "，忽略空行 " + dropped : ""}）！约 1 分钟后线上网站自动更新。`, "ok");
+  } catch (e) {
+    edSetMsg("❌ 推送失败：" + e.message, "err");
+  } finally {
+    btn.disabled = false; btn.textContent = "推送更新到 GitHub";
+  }
+});
+/* 编辑器密钥/Token 显示切换 */
+$("edEyeKey").addEventListener("click", () => {
+  const t = $("edKey");
+  t.type = t.type === "password" ? "text" : "password";
+  $("edEyeKey").textContent = t.type === "password" ? "显示" : "隐藏";
+});
+$("edEyeToken").addEventListener("click", () => {
+  const t = $("edToken");
+  t.type = t.type === "password" ? "text" : "password";
+  $("edEyeToken").textContent = t.type === "password" ? "显示" : "隐藏";
+});
+
+/* ---------- 吸顶样式（编辑器内滚动容器） ---------- */
+edOverlay.addEventListener("scroll", () => {
+  const st = $("edSticky"), sentinel = $("edSentinel");
+  if (!st || !sentinel) return;
+  st.classList.toggle("stuck", edOverlay.scrollTop > sentinel.offsetTop);
+});
+
+/* ============================================================
+   自测（仅 ?selftest=1 时运行，不影响正常使用）
+   ============================================================ */
+async function edSelfTest() {
+  const out = [];
+  const ok = (name, cond, extra) => out.push(`${cond ? "PASS" : "FAIL"} ${name}${extra ? " | " + extra : ""}`);
+  try {
+    $("openEditorBtn").click();
+    await new Promise(r => setTimeout(r, 1200));   // 等 fetch 加载
+    const n0 = edSongs.length;
+    ok("load", n0 > 300, `loaded ${n0}`);
+    ok("rowsRendered", edBody.querySelectorAll("tr.ed-row").length === n0);
+
+    // 1) 末尾加行 + 序号同步
+    $("edAddEndBtn").click();
+    ok("appendRow", edSongs.length === n0 + 1);
+    const lastIdx = edBody.querySelector(`tr[data-idx="${n0}"] .td-idx`);
+    ok("indexAutoSync", lastIdx && lastIdx.textContent === String(n0 + 1), `last # = ${lastIdx && lastIdx.textContent}`);
+
+    // 2) 单元格编辑 → 模型更新
+    const tr = edBody.querySelector(`tr[data-idx="${n0}"]`);
+    const cell = tr.querySelector('td[data-field="title"]');
+    cell.textContent = "测试歌曲XYZ";
+    cell.dispatchEvent(new InputEvent("input", { bubbles: true }));
+    ok("cellEdit", edSongs[n0].title === "测试歌曲XYZ", edSongs[n0].title);
+
+    // 3) 拖动（直接调 moveRow）：把第6行(index 5)移到最前
+    const t5 = edSongs[5].title;
+    edMoveRow(5, 0, "before");
+    ok("dragMove", edSongs[0].title === t5, `row0 = ${edSongs[0].title}`);
+    ok("indexAfterMove", edBody.querySelector('tr[data-idx="0"] .td-idx').textContent === "1");
+
+    // 4) 撤销拖动：把 index0 移回原位（放到 index5 那行之后）
+    edMoveRow(0, 5, "after");
+    ok("dragBack", edSongs[5].title === t5, `row5 = ${edSongs[5].title}`);
+
+    // 5) 删除行
+    window.confirm = () => true;
+    edDeleteRow(n0);   // 删除追加的测试行
+    ok("deleteRow", edSongs.length === n0);
+
+    // 6) 筛选
+    edSearch.value = "炎";
+    edRender();
+    const shown = edBody.querySelectorAll("tr.ed-row").length;
+    ok("searchFilter", shown > 0 && shown < n0, `shown ${shown}`);
+    ok("searchKeepsRealIndex", edBody.querySelector("tr.ed-row .td-idx") &&
+      edBody.querySelector("tr.ed-row").dataset.idx !== "0");
+    edSearch.value = "";
+    edRender();
+
+    // 7) 应用到主页面
+    const dropped = edSyncToMain();
+    ok("applyToMain", validSongs === null || Array.isArray(validSongs) && validSongs.length === edSongs.length,
+       `validSongs ${validSongs && validSongs.length}, dropped ${dropped}`);
+
+    out.push(`RESULT: ${out.every(l => l.startsWith("PASS")) ? "ALL PASS" : "HAS FAIL"} | total ${edSongs.length}`);
+  } catch (e) {
+    out.push("EXCEPTION: " + e.message);
+  }
+  $("selftestOut").textContent = out.join("\n");
+  document.title = "SELFTEST DONE";
+}
+if (location.search.includes("selftest")) setTimeout(edSelfTest, 500);
+else if (location.search.includes("editor=1")) setTimeout(openEditor, 200);
 </script>
 </body>
 </html>
