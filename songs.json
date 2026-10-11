@@ -11,7 +11,7 @@
   "link": ""
  },
  {
-  "title": "下等马",
+  "title": "我的悲伤是水做的",
   "titleZh": "",
   "artist": "ChiliChill",
   "type": "中文",
@@ -22,7 +22,7 @@
   "link": ""
  },
  {
-  "title": "我的悲伤是水做的",
+  "title": "下等马",
   "titleZh": "",
   "artist": "ChiliChill",
   "type": "中文",
@@ -129,6 +129,17 @@
   "paid": "否",
   "gift": "",
   "note": "冰雪奇缘",
+  "link": ""
+ },
+ {
+  "title": "I Really Want to Stay at Your House",
+  "titleZh": "",
+  "artist": "Samuel Kim / Lorien",
+  "type": "中文",
+  "language": "中文",
+  "paid": "否",
+  "gift": "",
+  "note": "赛博朋克边缘行者",
   "link": ""
  },
  {
@@ -418,6 +429,17 @@
   "link": ""
  },
  {
+  "title": "别看我小",
+  "titleZh": "",
+  "artist": "金海心",
+  "type": "中文",
+  "language": "中文",
+  "paid": "否",
+  "gift": "",
+  "note": "小鲤鱼历险记",
+  "link": ""
+ },
+ {
   "title": "繁华唱遍",
   "titleZh": "",
   "artist": "乐正绫",
@@ -550,6 +572,17 @@
   "link": ""
  },
  {
+  "title": "爱情公寓",
+  "titleZh": "",
+  "artist": "娄艺潇/王传君等",
+  "type": "中文",
+  "language": "中文",
+  "paid": "否",
+  "gift": "",
+  "note": "爱情公寓3",
+  "link": ""
+ },
+ {
   "title": "刻在我心底的名字",
   "titleZh": "",
   "artist": "卢广仲",
@@ -579,7 +612,7 @@
   "language": "中文",
   "paid": "否",
   "gift": "",
-  "note": "",
+  "note": "爱情公寓3",
   "link": ""
  },
  {
@@ -2497,6 +2530,17 @@
   "link": ""
  },
  {
+  "title": "Oz.",
+  "titleZh": "",
+  "artist": "yama",
+  "type": "JPOP",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "国王排名",
+  "link": ""
+ },
+ {
   "title": "我愛你-上海蟹-",
   "titleZh": "",
   "artist": "カニ研究会",
@@ -2709,6 +2753,17 @@
   "title": "カワキヲアメク",
   "titleZh": "声嘶力竭",
   "artist": "美波",
+  "type": "JPOP",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "",
+  "link": ""
+ },
+ {
+  "title": "ダダダダ天使",
+  "titleZh": "",
+  "artist": "七音阿卡莉",
   "type": "JPOP",
   "language": "日文",
   "paid": "否",
@@ -3033,6 +3088,17 @@
   "paid": "否",
   "gift": "",
   "note": "鬼灭之刃",
+  "link": ""
+ },
+ {
+  "title": "Life Will Change",
+  "titleZh": "",
+  "artist": "Lyn",
+  "type": "动画/游戏插曲",
+  "language": "日文",
+  "paid": "否",
+  "gift": "",
+  "note": "女神异闻录5",
   "link": ""
  },
  {

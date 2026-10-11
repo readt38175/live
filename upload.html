@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>歌单更新·测试版 - 芙芙的歌单</title>
+  <title>歌单更新 - 芙芙的歌单</title>
   <link rel="icon" href="favicon.ico?v=4" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/package/dist/xlsx.full.min.js"></script>
@@ -191,7 +191,7 @@
 </head>
 <body>
 <div class="wrap">
-  <h1>歌单更新 · 测试版</h1>
+  <h1>歌单更新</h1>
 
   <div class="steps">
     <b>操作步骤：</b><br>
@@ -370,7 +370,7 @@
     <p class="msg" id="pushMsg"></p>
   </div>
 
-  <p class="foot">芙芙的歌单 · 管理页（测试版 upload1）</p>
+  <p class="foot">芙芙的歌单 · 管理页</p>
 </div>
 
 <!-- ==================== 可视化编辑器（全屏覆盖层） ==================== -->
@@ -643,21 +643,48 @@ const zhCollator = new Intl.Collator("zh-Hans-CN", { numeric: true });
 const LANG_ORDER = ["中文", "日文"];
 const TYPE_ORDER = ["中文", "JPOP", "动画/游戏插曲", "动画·游戏插曲", "VOCALOID/ボカロ", "昭和老歌"];
 const ARTIST_PRIORITY = ["ずっと真夜中でいいのに。", "夜鹿/ヨルシカ", "夜游/YOASOBI"];
+// 中文段恒置顶的歌手（按数组顺序排最前）
+const CN_ARTIST_TOP = ["ChiliChill"];
+// 紧跟某歌手之后置中的规则（键排在值之后）
 const ARTIST_PIN_AFTER = { "A2A组合": "ChiliChill" };
 
 function sortSonglist(arr) {
   const langRank = s => { const i = LANG_ORDER.indexOf(s.language); return i === -1 ? LANG_ORDER.length : i; };
   const typeRank = s => { const i = TYPE_ORDER.indexOf(s.type); return i === -1 ? TYPE_ORDER.length : i; };
   const prioRank = s => { const i = ARTIST_PRIORITY.indexOf(s.artist || ""); return i === -1 ? ARTIST_PRIORITY.length : i; };
+  const cnTopRank = s => {
+    const i = CN_ARTIST_TOP.indexOf(s.artist || "");
+    return i === -1 ? CN_ARTIST_TOP.length : i;
+  };
   arr.sort((a, b) =>
     langRank(a) - langRank(b) ||
     typeRank(a) - typeRank(b) ||
+    cnTopRank(a) - cnTopRank(b) ||
     prioRank(a) - prioRank(b) ||
     (prioRank(a) < ARTIST_PRIORITY.length
       ? zhCollator.compare(a.title || "", b.title || "")
       : zhCollator.compare(a.artist || "", b.artist || "")) ||
     zhCollator.compare(a.title || "", b.title || ""));
+  applyCnTop(arr);
   applyArtistPin(arr);
+  return arr;
+}
+
+// 中文段恒置顶：把 CN_ARTIST_TOP 里的歌手整体提到所属语言段最前
+function applyCnTop(arr) {
+  for (let k = CN_ARTIST_TOP.length - 1; k >= 0; k--) {
+    const artist = CN_ARTIST_TOP[k];
+    const moving = arr.filter(s => (s.artist || "") === artist);
+    if (!moving.length) continue;
+    const base = arr.filter(s => (s.artist || "") !== artist);
+    const anchor = moving[0];
+    let segStart = 0;
+    for (let i = 0; i < base.length; i++) {
+      if (base[i].language === anchor.language && base[i].type === anchor.type) { segStart = i; break; }
+    }
+    arr.length = 0;
+    arr.push(...base.slice(0, segStart), ...moving, ...base.slice(segStart));
+  }
   return arr;
 }
 
