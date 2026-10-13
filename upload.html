@@ -452,7 +452,9 @@
 const $ = id => document.getElementById(id);
 
 /* ================= 配置 ================= */
-const ADMIN_KEY = "fufu-wGe9J9p9";   // 管理密钥（修改请同步告知使用者）
+/* 管理密钥：源码中只保存 SHA-256 摘要，不含明文（查看源码无法还原出密钥）。
+   更换密钥的方法：算出新密钥的 sha256 十六进制值，替换下面这串即可。 */
+const ADMIN_KEY_SHA256 = "008c279c257f7e3a9d9e65f5eefef19346929d91241aecbcb31614642822356c";
 const PRESET_REPO  = "readt38175/live";   // 预置推送仓库
 const PRESET_BRANCH = "main";
 
@@ -473,18 +475,36 @@ let siteConfig = { siteName: "", subtitle: "", background: {} };
 let validSongs = null;      // 校验通过的歌单数据
 let keyOk = false;
 
-/* ================= 密钥 + Token 双验证 ================= */
+/* ================= 密钥 + Token 双验证 =================
+   密钥只以 SHA-256 摘要比对，明文不会出现在页面源码里；
+   真正的推送授权由 GitHub Token 承担（由 GitHub 服务端校验写入权限）。 */
 function tokenOk() { return $("ghToken").value.trim().length > 0; }
 
-function checkKey() {
-  keyOk = keyInput.value.trim() === ADMIN_KEY;
+async function keyValid(value) {
+  const v = (value || "").trim();
+  if (!v) return false;
+  if (!(window.crypto && crypto.subtle)) return false;   // file:// 等非安全上下文
+  try {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(v));
+    const hex = [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, "0")).join("");
+    return hex === ADMIN_KEY_SHA256;
+  } catch (e) {
+    return false;
+  }
+}
+
+async function checkKey() {
+  keyOk = await keyValid(keyInput.value);
   downloadBtn.disabled = !keyOk || !validSongs;
   pushBtn.disabled = !(keyOk && tokenOk());
   if (keyOk && validSongs) pushMsg.textContent = "";
   return keyOk;
 }
 function verifyState() {
-  if (keyOk && tokenOk()) {
+  if (!(window.crypto && crypto.subtle)) {
+    pushMsg.className = "msg err";
+    pushMsg.textContent = "当前环境不支持密钥校验，请通过 https 或本地服务打开本页";
+  } else if (keyOk && tokenOk()) {
     pushMsg.className = "msg ok";
     pushMsg.textContent = "密钥 + Token 验证通过，可以推送 ✔";
   } else if (keyOk && !tokenOk()) {
@@ -495,13 +515,13 @@ function verifyState() {
     pushMsg.textContent = "密钥不正确";
   }
 }
-keyInput.addEventListener("input", () => {
-  checkKey();
+keyInput.addEventListener("input", async () => {
+  await checkKey();
   if (keyInput.value.trim() || $("ghToken").value.trim()) verifyState();
   else pushMsg.textContent = "";
 });
-$("ghToken").addEventListener("input", () => {
-  checkKey();
+$("ghToken").addEventListener("input", async () => {
+  await checkKey();
   if (keyInput.value.trim() || $("ghToken").value.trim()) verifyState();
   else pushMsg.textContent = "";
 });
@@ -886,8 +906,8 @@ parseJsonBtn.addEventListener("click", async () => {
 });
 
 /* ================= 下载 ================= */
-downloadBtn.addEventListener("click", () => {
-  if (!checkKey() || !validSongs) return;
+downloadBtn.addEventListener("click", async () => {
+  if (!(await checkKey()) || !validSongs) return;
   const blob = new Blob([JSON.stringify(validSongs, null, 1)], { type: "application/json" });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(blob);
@@ -992,7 +1012,7 @@ async function pushFile(repo, token, branch, path, content) {
 }
 
 pushBtn.addEventListener("click", async () => {
-  if (!checkKey()) { pushMsg.className = "msg err"; pushMsg.textContent = "请先填写正确的个人密钥"; return; }
+  if (!(await checkKey())) { pushMsg.className = "msg err"; pushMsg.textContent = "请先填写正确的个人密钥"; return; }
   const repo = normalizeRepo($("ghRepo").value);
   const token = $("ghToken").value.trim();
   const branch = $("ghBranch").value.trim() || "main";
@@ -1296,13 +1316,14 @@ function edSyncToMain() {
   validSongs = JSON.parse(JSON.stringify(edSongs));
   keyInput.value = $("edKey").value;          // 同步密钥/Token 到管理页
   $("ghToken").value = $("edToken").value;
-  checkKey();
-  showPreviewOk(`来自可视化编辑器，共 ${validSongs.length} 首` + (dropped ? `（已忽略 ${dropped} 个空行）` : "") + "。", validSongs);
-  return dropped;
+  return checkKey().then(() => {
+    showPreviewOk(`来自可视化编辑器，共 ${validSongs.length} 首` + (dropped ? `（已忽略 ${dropped} 个空行）` : "") + "。", validSongs);
+    return dropped;
+  });
 }
-$("edApplyBtn").addEventListener("click", () => {
+$("edApplyBtn").addEventListener("click", async () => {
   try {
-    const dropped = edSyncToMain();
+    const dropped = await edSyncToMain();
     edDirty = false;
     edSetMsg(`✅ 已应用到下方预览区（${validSongs.length} 首${dropped ? "，忽略空行 " + dropped : ""}）。可关闭编辑器在管理页推送，或直接点「推送更新」。`, "ok");
   } catch (e) {
@@ -1329,7 +1350,7 @@ $("edDownloadBtn").addEventListener("click", () => {
 $("edPushBtn").addEventListener("click", async () => {
   const key = $("edKey").value.trim();
   const token = $("edToken").value.trim();
-  if (key !== ADMIN_KEY) { edSetMsg("❌ 密钥不正确", "err"); return; }
+  if (!(await keyValid(key))) { edSetMsg("❌ 密钥不正确", "err"); return; }
   if (!token) { edSetMsg("❌ 请填写 GitHub Token", "err"); return; }
   const btn = $("edPushBtn");
   btn.disabled = true; btn.textContent = "推送中…";
@@ -1420,9 +1441,14 @@ async function edSelfTest() {
     edRender();
 
     // 7) 应用到主页面
-    const dropped = edSyncToMain();
+    const dropped = await edSyncToMain();
     ok("applyToMain", validSongs === null || Array.isArray(validSongs) && validSongs.length === edSongs.length,
        `validSongs ${validSongs && validSongs.length}, dropped ${dropped}`);
+
+    // 6.5) 密钥校验（只断言行为，不在源码中保留明文密钥）
+    ok("keyHashFormat", /^[0-9a-f]{64}$/.test(String(ADMIN_KEY_SHA256 || "")));
+    ok("wrongKeyRejected", (await keyValid("not-the-real-key-123")) === false);
+    ok("emptyKeyRejected", (await keyValid("")) === false);
 
     out.push(`RESULT: ${out.every(l => l.startsWith("PASS")) ? "ALL PASS" : "HAS FAIL"} | total ${edSongs.length}`);
   } catch (e) {
