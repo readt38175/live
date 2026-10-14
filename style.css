@@ -435,15 +435,14 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   .search-icon { left: 12px; font-size: 13px; }
   .toolbar { margin-bottom: 10px; }
 
-  /* 随机一首/复制提示挂顶部：部分 App 内置浏览器的底部工具栏是系统级
-     UI，会盖住网页任何 bottom 定位内容，顶部则无此问题。
-     位置 = 安全区顶部 + 62px，吸顶搜索框取消后即为页面内容区上方 */
+  /* 随机一首/复制提示：垂直居中显示（底部/顶部方案均被环境盖住，
+     改屏幕正中确保可见；出现时从中心上方 16px 滑入） */
   .toast {
-    top: calc(env(safe-area-inset-top, 0px) + 62px);
+    top: 50%;
     bottom: auto;
-    transform: translateX(-50%) translateY(-16px);
+    transform: translateX(-50%) translateY(calc(-50% - 16px));
   }
-  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.show { transform: translateX(-50%) translateY(-50%); }
   .table-wrap { border-radius: 12px; position: relative; }
 
   /* 工具栏：缩小按钮字号与内边距，三个按钮尽量排成一行 */
