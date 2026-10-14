@@ -432,16 +432,8 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   .search-icon { left: 12px; font-size: 13px; }
   .toolbar { margin-bottom: 10px; }
 
-  /* 复制提示改挂顶部：部分 App 内置浏览器的底部工具栏是系统级 UI，
-     会盖住网页任何 bottom 定位的内容，顶部则无此问题。
-     位置 = 安全区顶部 + 62px，正好在吸顶搜索框（约 44px 高）下方，
-     提示出现时向下小幅滑入，1.6 秒即消失，不挡中间内容滑动 */
-  .toast {
-    top: calc(env(safe-area-inset-top, 0px) + 62px);
-    bottom: auto;
-    transform: translateX(-50%) translateY(-16px);
-  }
-  .toast.show { transform: translateX(-50%) translateY(0); }
+  /* 复制提示：距底部 120px，避开手机浏览器底部工具栏/手势条 */
+  .toast { bottom: 120px; top: auto; }
   .table-wrap { border-radius: 12px; position: relative; }
 
   /* 工具栏：缩小按钮字号与内边距，三个按钮尽量排成一行 */
