@@ -391,12 +391,46 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
 
 /* ========== 移动端适配 ========== */
 @media (max-width: 480px) {
-  .header h1 { font-size: 21px; }
-  .avatar { width: 88px; height: 88px; }
-  .filter-bar { gap: 8px; }
-  .filter-select { min-width: 100%; }
-  .filter-select { padding: 2px 4px 2px 10px; }
-  .container { padding: 24px 10px 40px; }
+  .container { padding: 18px 10px 40px; }
+
+  /* 头部：头像居左、标题居右的横向紧凑布局 */
+  .header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 12px;
+    row-gap: 2px;
+    align-items: center;
+    text-align: left;
+    margin-bottom: 14px;
+  }
+  .avatar {
+    grid-row: 1 / span 2;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 0;
+    border-width: 2px;
+    box-shadow: 0 0 0 4px rgba(124, 227, 207, 0.08), 0 4px 16px rgba(0, 0, 0, 0.5);
+  }
+  .header h1 { grid-column: 2; font-size: 19px; margin-bottom: 0; }
+  .subtitle { grid-column: 2; font-size: 12px; }
+
+  /* 筛选栏：两列网格，压缩整体高度 */
+  .filter-bar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  .filter-select { min-width: 0; padding: 1px 3px 1px 9px; }
+  .fs-label { font-size: 12.5px; padding-right: 7px; }
+  .filter-select select { padding: 7px 2px; font-size: 12.5px; }
+
+  /* 搜索框与工具栏间距收紧 */
+  .search-box { margin-bottom: 8px; }
+  #searchInput { padding: 10px 12px 10px 36px; font-size: 13.5px; border-radius: 12px; }
+  .search-icon { left: 12px; font-size: 13px; }
+  .toolbar { margin-bottom: 10px; }
   .table-wrap { border-radius: 12px; position: relative; }
 
   /* 工具栏：缩小按钮字号与内边距，三个按钮尽量排成一行 */
