@@ -432,8 +432,10 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   .search-icon { left: 12px; font-size: 13px; }
   .toolbar { margin-bottom: 10px; }
 
-  /* 复制提示上移：避开移动端浏览器底部工具栏/手势条，也不挡屏幕中部滑动 */
-  .toast { bottom: 84px; }
+  /* 复制提示上移：微信/B站等 App 内置浏览器和安卓浏览器的底部工具栏
+     会盖住 bottom 84px 以内的内容，直接抬到其上方（约 110px + 安全区），
+     仍处屏幕下方约 1/4 处，不进入屏幕中间影响滑动 */
+  .toast { bottom: calc(110px + env(safe-area-inset-bottom, 0px)); }
   .table-wrap { border-radius: 12px; position: relative; }
 
   /* 工具栏：缩小按钮字号与内边距，三个按钮尽量排成一行 */
