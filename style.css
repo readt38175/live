@@ -431,6 +431,9 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   #searchInput { padding: 10px 12px 10px 36px; font-size: 13.5px; border-radius: 12px; }
   .search-icon { left: 12px; font-size: 13px; }
   .toolbar { margin-bottom: 10px; }
+
+  /* 复制提示上移：避开移动端浏览器底部工具栏/手势条，也不挡屏幕中部滑动 */
+  .toast { bottom: 84px; }
   .table-wrap { border-radius: 12px; position: relative; }
 
   /* 工具栏：缩小按钮字号与内边距，三个按钮尽量排成一行 */
