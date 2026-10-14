@@ -20,6 +20,7 @@ const sortBtn = document.getElementById("sortArtistBtn");
 const sortTitleBtn = document.getElementById("sortTitleBtn");
 const randomBtn = document.getElementById("randomBtn");
 const toastEl = document.getElementById("toast");
+const backTopBtn = document.getElementById("backTop");
 const stickyArea = document.getElementById("stickyArea");
 const stickySentinel = document.getElementById("stickySentinel");
 const searchBox = document.querySelector(".search-box");
@@ -149,6 +150,15 @@ mobileMq.addEventListener("change", () => {
   setupSticky();
 });
 window.addEventListener("resize", updateStickyHeight);
+
+/* ================= 回到顶部悬浮按钮（移动端） =================
+   滚动超过约一屏出现，点击平滑回顶，替代取消吸顶后损失的「快速回搜索」 */
+backTopBtn.addEventListener("click", () => {
+  window.scrollTo({ top: 0, behavior: "smooth" });
+});
+window.addEventListener("scroll", () => {
+  backTopBtn.classList.toggle("show", window.scrollY > 480);
+}, { passive: true });
 
 /* ================= 移动端横拖查看「付费礼物」列 =================
    移动端不用 overflow-x:auto 横滚容器（它会让 thead 的 sticky 以容器为

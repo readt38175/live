@@ -44,6 +44,9 @@ body {
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
+/* 回到顶部悬浮按钮：仅移动端显示（样式见 ≤480px 媒体查询） */
+.back-top { display: none; }
+
 /* ========== 背景图位置自适应（星空等图片背景） ========== */
 /* 桌面端：居中铺满 */
 .bg-image {
@@ -442,22 +445,38 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   .tool-btn { padding: 6px 10px; font-size: 12px; border-radius: 9px; white-space: nowrap; }
   .count-info { font-size: 11px; }
 
-  /* 移动端：仅搜索框吸顶。display:contents 让 .sticky-area 不生成盒子，
-     搜索框的吸顶容器升格为整个页面，滚到哪都能吸住 */
+  /* 移动端取消顶部固定：搜索框随页面滚动，不再吸顶（此前固定顶端
+     疑似影响底部提示显示，且长列表回顶部不便，由悬浮按钮补足） */
   .sticky-area { display: contents; }
-  .search-box {
-    position: sticky;
-    top: 0;
-    z-index: 60;
-    border-radius: 14px;
+
+  /* 回到顶部悬浮按钮：半透明圆形 + 毛玻璃，滚动超过约一屏出现 */
+  .back-top {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    right: 12px;
+    bottom: 26px;
+    width: 42px;
+    height: 42px;
+    padding: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(124, 227, 207, 0.35);
+    background: rgba(21, 24, 35, 0.5);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    color: var(--primary);
+    font-size: 19px;
+    font-family: inherit;
+    line-height: 1;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.15s;
+    z-index: 70;
   }
-  .search-box.stuck {
-    background: rgba(11, 13, 18, 0.88);
-    -webkit-backdrop-filter: blur(12px);
-    backdrop-filter: blur(12px);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
-    border: 1px solid var(--border);
-  }
+  .back-top.show { opacity: 0.9; pointer-events: auto; }
+  .back-top:active { transform: scale(0.94); }
 
   /* 表格：基础四列（# / 歌名 / 歌手 / 类型）正好铺满屏宽，
      「付费礼物」列额外多出 ~70px，横向拖动才能看到 */
@@ -495,14 +514,7 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   .song-table th:nth-child(6) { width: 66px; }
   .song-table th:nth-child(3) { width: 25%; }
 
-  /* 表头原生吸顶：紧贴吸顶搜索框正下方 */
-  .song-table thead th {
-    position: sticky;
-    top: var(--sticky-h, 0px);
-    z-index: 45;
-    background: #1a1e2c;
-    border-bottom: 1px solid var(--border);
-  }
+  /* 移动端不再固定表头：随表格一起滚动（≤900px 规则已设 static） */
 
   /* 长歌名/长歌手名允许换行，避免撑破固定布局 */
   .td-title, .td-artist { overflow-wrap: anywhere; white-space: normal; }
