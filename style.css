@@ -86,61 +86,32 @@ body::before {
   -webkit-tap-highlight-color: transparent;
   z-index: 90;
 }
-/* 拉绳：垂直虚线（加长更醒目） */
+/* 拉绳：垂直虚线（加粗加长更醒目） */
 .tt-cord {
   width: 0;
-  height: 72px;
-  border-left: 2px dashed rgba(242, 160, 180, 0.7);
+  height: 96px;
+  border-left: 3px dashed rgba(242, 160, 180, 0.75);
 }
 /* 末端圆环：深色模式空心，浅色模式实心（兼作当前模式指示） */
 .tt-ring {
-  width: 16px;
-  height: 16px;
+  width: 18px;
+  height: 18px;
   margin-top: 5px;
-  border: 3px solid var(--accent);
+  border: 3.5px solid var(--accent);
   border-radius: 50%;
   background: transparent;
   transition: background 0.2s;
 }
 /* 环下小坠点 */
 .tt-bead {
-  width: 5px;
-  height: 5px;
+  width: 6px;
+  height: 6px;
   margin-top: 4px;
   border-radius: 50%;
   background: var(--accent);
 }
 html.light .tt-cord { border-left-color: rgba(201, 95, 123, 0.6); }
 html.light .tt-ring { background: var(--accent); }
-/* 提示牌：虚线引出 + 圆角小标签（点击标签同样可切换） */
-.tt-hint {
-  position: absolute;
-  top: 30px;
-  right: 100%;
-  margin-right: 4px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.tt-hint-text {
-  padding: 2px 9px;
-  font-size: 12px;
-  line-height: 1.6;
-  color: var(--text-light);
-  background: rgba(21, 24, 35, 0.6);
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  white-space: nowrap;
-  -webkit-backdrop-filter: blur(8px);
-  backdrop-filter: blur(8px);
-}
-html.light .tt-hint-text { background: rgba(255, 253, 248, 0.8); }
-.tt-dash {
-  width: 22px;
-  height: 0;
-  border-top: 1.5px dashed rgba(242, 160, 180, 0.7);
-}
-html.light .tt-dash { border-top-color: rgba(201, 95, 123, 0.6); }
 /* 点击后拉绳摆动一下 */
 .theme-toggle.swing { animation: tt-swing 0.7s ease-in-out; }
 @keyframes tt-swing {
@@ -691,9 +662,11 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   .header { padding-right: 44px; }
 
   /* 移动端拉绳只在页面顶部：改 absolute 随页面滚走，下滑后即消失；
-     提示牌窄屏不显示 */
+     绳子尺寸比桌面端小一号，窄屏更清爽 */
   .theme-toggle { position: absolute; }
-  .tt-hint { display: none; }
+  .tt-cord { height: 64px; border-left-width: 2.5px; }
+  .tt-ring { width: 15px; height: 15px; border-width: 3px; }
+  .tt-bead { width: 5px; height: 5px; }
 
   /* 表格：# / 歌名(含礼物徽章) / 歌手 / 类型 正好铺满屏宽。
      付费礼物列已取消，表格不再超宽，无需横向拖动 */
