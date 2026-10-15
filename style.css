@@ -628,13 +628,8 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   .search-icon { left: 12px; font-size: 13px; }
   .toolbar { margin-bottom: 10px; }
 
-  /* 随机一首/复制提示：中间靠下显示 */
-  .toast {
-    top: 62%;
-    bottom: auto;
-    transform: translateX(-50%) translateY(calc(-50% - 12px));
-  }
-  .toast.show { transform: translateX(-50%) translateY(-50%); }
+  /* 随机一首/复制提示：距底部 48px（沿用基类的上滑入场动画） */
+  .toast { top: auto; bottom: 48px; }
   .table-wrap { border-radius: 12px; position: relative; }
 
   /* 工具栏：缩小按钮字号与内边距，三个按钮尽量排成一行 */
