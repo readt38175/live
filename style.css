@@ -60,26 +60,26 @@ body {
   -webkit-tap-highlight-color: transparent;
   z-index: 90;
 }
-/* 拉绳：垂直虚线 */
+/* 拉绳：垂直虚线（加长更醒目） */
 .tt-cord {
   width: 0;
-  height: 46px;
+  height: 72px;
   border-left: 2px dashed rgba(242, 160, 180, 0.7);
 }
 /* 末端圆环：深色模式空心，浅色模式实心（兼作当前模式指示） */
 .tt-ring {
-  width: 14px;
-  height: 14px;
+  width: 16px;
+  height: 16px;
   margin-top: 5px;
-  border: 2.5px solid var(--accent);
+  border: 3px solid var(--accent);
   border-radius: 50%;
   background: transparent;
   transition: background 0.2s;
 }
 /* 环下小坠点 */
 .tt-bead {
-  width: 4px;
-  height: 4px;
+  width: 5px;
+  height: 5px;
   margin-top: 4px;
   border-radius: 50%;
   background: var(--accent);
@@ -122,7 +122,12 @@ html.light .tt-ring { background: var(--accent); }
 .back-top.show { opacity: 0.95; pointer-events: auto; }
 .back-top:hover { transform: translateY(-2px); }
 .back-top:active { transform: scale(0.94); }
-.back-top svg { display: block; }
+/* 桌面端加大更明显 */
+.back-top { width: 54px; height: 54px; }
+.back-top svg { width: 24px; height: 24px; }
+
+/* 礼物徽章：仅移动端歌名后显示（桌面端用「付费礼物」列） */
+.gift-inline { display: none; }
 
 /* ========== 背景图位置自适应（星空等图片背景） ========== */
 /* 桌面端：居中铺满 */
@@ -583,19 +588,15 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   /* 头部标题避开右上角悬浮的主题开关 */
   .header { padding-right: 44px; }
 
-  /* 表格：基础四列（# / 歌名 / 歌手 / 类型）正好铺满屏宽，
-     「付费礼物」列额外多出 ~70px，横向拖动才能看到 */
-  /* 不用 overflow-x:auto 横滚容器（它会让 thead 的 sticky 以容器为基准而
-     失效），改为 JS 手势平移表格本体。overflow 保持 visible，thead 即可
-     原生吸顶（由浏览器合成器处理，上下滚动零延迟、不再跳动）；
-     clip-path 裁掉向右多出的 70px，touch-action:pan-y 允许纵向原生滚动 */
+  /* 表格：# / 歌名(含礼物徽章) / 歌手 / 类型 正好铺满屏宽。
+     付费礼物列已取消，表格不再超宽，无需横向拖动 */
   .table-wrap {
     overflow: visible;
     touch-action: pan-y;
     clip-path: inset(0 round 12px);
   }
   .song-table {
-    min-width: calc(100% + 120px);  /* 多出：付费礼物列 + 类型列加宽 + 序号列加宽 */
+    min-width: 100%;
     width: 100%;
     table-layout: fixed;
     font-size: 12.5px;
@@ -609,14 +610,40 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   /* separate 模式下行边框需落在 td 上 */
   .song-table tbody td { border-bottom: 1px solid rgba(38, 43, 58, 0.55); }
   .song-table tbody tr:last-child td { border-bottom: none; }
-  .th-note, .td-note, .th-lang, .td-lang, .th-link, .td-link { display: none; }
-  /* 固定列宽：# / 类型 / 付费礼物 定宽，歌名占剩余空间。
+  .th-note, .td-note, .th-lang, .td-lang, .th-link, .td-link,
+  .th-gift, .td-gift { display: none; }
+  /* 固定列宽：# / 类型 定宽，歌名占剩余空间。
      序号 42px 完整容纳三位数（fixed 布局列宽含 padding）；
-     类型 122px 完整放下最长标签「动画/游戏插曲」「VOCALOID/ボカロ」，
-     放不下整屏的部分靠横拖查看 */
+     类型 122px 完整放下最长标签「动画/游戏插曲」「VOCALOID/ボカロ」 */
   .song-table th:nth-child(1) { width: 42px; }
   .song-table th:nth-child(4) { width: 122px; }
-  .song-table th:nth-child(6) { width: 66px; }
+  .song-table th:nth-child(3) { width: 25%; }
+
+  /* 付费礼物改歌名后徽章：金色圆角描边（参考 SC ¥100 样式） */
+  .gift-inline {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 0.5px 6px;
+    font-size: 10.5px;
+    line-height: 1.5;
+    border-radius: 7px;
+    border: 1.5px solid #e8b339;
+    color: #8a6100;
+    background: #fff;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+
+  /* 回到顶部：移动端小一号、半透明悬浮右下角（随视口固定，
+     不再随表格横向位置变化） */
+  .back-top {
+    width: 42px;
+    height: 42px;
+    right: 10px;
+    bottom: 22px;
+    background: rgba(21, 24, 35, 0.45);
+  }
+  .back-top svg { width: 19px; height: 19px; }
   .song-table th:nth-child(3) { width: 25%; }
 
   /* 移动端不再固定表头：随表格一起滚动（≤900px 规则已设 static） */

@@ -93,15 +93,18 @@
     <p class="empty-tip" id="emptyTip" hidden>没有找到匹配的歌曲 🎶</p>
   </div>
 
-  <!-- 主题开关：拉绳灯开关造型（绳+环+坠点，点击切换深浅色） -->
-  <button id="themeToggle" class="theme-toggle" type="button" aria-label="切换深浅色模式">
+  <!-- 主题开关：拉绳灯开关造型（绳+环+坠点）。切换逻辑内联在 onclick，
+       即使 app.js 缓存过期也能正常切换 -->
+  <button id="themeToggle" class="theme-toggle" type="button" aria-label="切换深浅色模式"
+    onclick="var d=document.documentElement,l=d.classList.toggle('light');try{localStorage.setItem('theme',l?'light':'dark')}catch(e){};this.classList.remove('swing');void this.offsetWidth;this.classList.add('swing')">
     <span class="tt-cord" aria-hidden="true"></span>
     <span class="tt-ring" aria-hidden="true"></span>
     <span class="tt-bead" aria-hidden="true"></span>
   </button>
 
-  <!-- 回到顶部悬浮按钮：滚动后出现，桌面/移动端均显示 -->
-  <button id="backTop" class="back-top" type="button" aria-label="回到顶部">
+  <!-- 回到顶部悬浮按钮：滚动后出现（.show 由 app.js 控制），点击逻辑内联 -->
+  <button id="backTop" class="back-top" type="button" aria-label="回到顶部"
+    onclick="window.scrollTo({top:0,behavior:'smooth'})">
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M12 19V5"/><path d="M5 12l7-7 7 7"/>

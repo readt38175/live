@@ -151,14 +151,18 @@ mobileMq.addEventListener("change", () => {
 });
 window.addEventListener("resize", updateStickyHeight);
 
-/* ================= 回到顶部悬浮按钮（移动端） =================
-   滚动超过约一屏出现，点击平滑回顶，替代取消吸顶后损失的「快速回搜索」 */
+/* ================= 回到顶部悬浮按钮 =================
+   滚动超过约一屏出现，点击平滑回顶，桌面/移动端均显示 */
 backTopBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
 window.addEventListener("scroll", () => {
-  backTopBtn.classList.toggle("show", window.scrollY > 480);
+  backTopBtn.classList.toggle("show", window.scrollY > 400);
 }, { passive: true });
+
+/* ================= 深浅色模式开关（右上角拉绳灯开关） =================
+   切换逻辑已内联到 index.html 按钮的 onclick（防止 app.js 缓存过期导致
+   开关失灵），此处不再绑定，避免双重触发 */
 
 /* ================= 移动端横拖查看「付费礼物」列 =================
    移动端不用 overflow-x:auto 横滚容器（它会让 thead 的 sticky 以容器为
@@ -307,10 +311,18 @@ function render() {
     tdIdx.textContent = i + 1;
     tr.appendChild(tdIdx);
 
-    // 歌名（+ 中文译名小字）
+    // 歌名（+ 礼物徽章 / 中文译名小字）
     const tdTitle = document.createElement("td");
     tdTitle.className = "td-title";
     tdTitle.textContent = song.title || "未知歌名";
+    // 礼物徽章：移动端隐藏「付费礼物」列后改在歌名后展示（桌面端隐藏此徽章）
+    const giftStr = (song.gift || "").trim();
+    if (giftStr) {
+      const gi = document.createElement("span");
+      gi.className = "gift-inline";
+      gi.textContent = giftStr;
+      tdTitle.appendChild(gi);
+    }
     if (song.titleZh) {
       const zh = document.createElement("span");
       zh.className = "title-zh";
