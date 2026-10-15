@@ -112,6 +112,35 @@ body::before {
 }
 html.light .tt-cord { border-left-color: rgba(201, 95, 123, 0.6); }
 html.light .tt-ring { background: var(--accent); }
+/* 提示牌：虚线引出 + 圆角小标签（点击标签同样可切换） */
+.tt-hint {
+  position: absolute;
+  top: 30px;
+  right: 100%;
+  margin-right: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tt-hint-text {
+  padding: 2px 9px;
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--text-light);
+  background: rgba(21, 24, 35, 0.6);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  white-space: nowrap;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+html.light .tt-hint-text { background: rgba(255, 253, 248, 0.8); }
+.tt-dash {
+  width: 22px;
+  height: 0;
+  border-top: 1.5px dashed rgba(242, 160, 180, 0.7);
+}
+html.light .tt-dash { border-top-color: rgba(201, 95, 123, 0.6); }
 /* 点击后拉绳摆动一下 */
 .theme-toggle.swing { animation: tt-swing 0.7s ease-in-out; }
 @keyframes tt-swing {
@@ -660,6 +689,11 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
 
   /* 头部标题避开右上角悬浮的主题开关 */
   .header { padding-right: 44px; }
+
+  /* 移动端拉绳只在页面顶部：改 absolute 随页面滚走，下滑后即消失；
+     提示牌窄屏不显示 */
+  .theme-toggle { position: absolute; }
+  .tt-hint { display: none; }
 
   /* 表格：# / 歌名(含礼物徽章) / 歌手 / 类型 正好铺满屏宽。
      付费礼物列已取消，表格不再超宽，无需横向拖动 */
