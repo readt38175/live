@@ -44,8 +44,85 @@ body {
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* 回到顶部悬浮按钮：仅移动端显示（样式见 ≤480px 媒体查询） */
-.back-top { display: none; }
+/* ========== 主题开关：拉绳灯开关（右上角，深/浅色切换） ========== */
+.theme-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  right: 20px;
+  padding: 0 14px 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transform-origin: top center;  /* 摆动动画以绳顶为轴 */
+  -webkit-tap-highlight-color: transparent;
+  z-index: 90;
+}
+/* 拉绳：垂直虚线 */
+.tt-cord {
+  width: 0;
+  height: 46px;
+  border-left: 2px dashed rgba(242, 160, 180, 0.7);
+}
+/* 末端圆环：深色模式空心，浅色模式实心（兼作当前模式指示） */
+.tt-ring {
+  width: 14px;
+  height: 14px;
+  margin-top: 5px;
+  border: 2.5px solid var(--accent);
+  border-radius: 50%;
+  background: transparent;
+  transition: background 0.2s;
+}
+/* 环下小坠点 */
+.tt-bead {
+  width: 4px;
+  height: 4px;
+  margin-top: 4px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+html.light .tt-cord { border-left-color: rgba(201, 95, 123, 0.6); }
+html.light .tt-ring { background: var(--accent); }
+/* 点击后拉绳摆动一下 */
+.theme-toggle.swing { animation: tt-swing 0.7s ease-in-out; }
+@keyframes tt-swing {
+  0%   { transform: rotate(0); }
+  25%  { transform: rotate(10deg); }
+  55%  { transform: rotate(-7deg); }
+  80%  { transform: rotate(4deg); }
+  100% { transform: rotate(0); }
+}
+
+/* ========== 回到顶部悬浮按钮：滚过约一屏出现，桌面/移动端均显示 ========== */
+.back-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  right: 16px;
+  bottom: 28px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1.5px solid var(--accent);
+  background: rgba(21, 24, 35, 0.55);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: var(--accent);
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s, transform 0.15s;
+  z-index: 80;
+}
+.back-top.show { opacity: 0.95; pointer-events: auto; }
+.back-top:hover { transform: translateY(-2px); }
+.back-top:active { transform: scale(0.94); }
+.back-top svg { display: block; }
 
 /* ========== 背景图位置自适应（星空等图片背景） ========== */
 /* 桌面端：居中铺满 */
@@ -160,6 +237,7 @@ body.has-bg-image .bg-overlay { display: block; }
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 14px;
+  padding-right: 52px; /* 右上角悬浮的主题开关让位 */
 }
 .filter-select {
   flex: 1;
@@ -383,6 +461,53 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
 .admin-link { font-size: 13px; color: var(--text-light); text-decoration: none; }
 .admin-link:hover { color: var(--primary); }
 
+/* ========== 浅色模式（html.light，右上角开关切换，记忆到 localStorage） ========== */
+html.light { color-scheme: light; }
+/* 奶油底 + 白卡片，主色/点缀色加深保证对比度 */
+html.light {
+  --primary: #2f9e8a;
+  --primary-dim: rgba(47, 158, 138, 0.12);
+  --accent: #c95f7b;
+  --accent-dim: rgba(201, 95, 123, 0.12);
+  --bg: #f7f2e8;
+  --card: #fffdf8;
+  --card-hover: #f4eee1;
+  --text: #3a3e46;
+  --text-light: #8b8f97;
+  --border: #e5ddcd;
+}
+/* 浅色不要背景图案：背景图/蒙层/氛围光晕全部隐藏 */
+html.light body { background: var(--bg) !important; } /* !important 盖过 site.json 写入的内联底色 */
+html.light body.has-bg-image .bg-image,
+html.light body.has-bg-image .bg-overlay,
+html.light .glow { display: none; }
+/* 组件逐一适配 */
+html.light .header h1 {
+  background: linear-gradient(120deg, #17705f, #4a4f57 55%, #b34e68);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+html.light .avatar { box-shadow: 0 0 0 4px rgba(47, 158, 138, 0.08), 0 4px 16px rgba(0, 0, 0, 0.12); }
+html.light .sticky-area.stuck {
+  background: rgba(247, 242, 232, 0.9);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
+}
+html.light .search-box.stuck { background: rgba(247, 242, 232, 0.9); }
+html.light .song-table thead th { background: #efe8d8; }
+html.light .song-table tbody tr { border-bottom-color: rgba(0, 0, 0, 0.06); }
+html.light .song-table tbody tr:hover { background: rgba(47, 158, 138, 0.06); }
+html.light .song-table tbody td { border-bottom: 1px solid rgba(0, 0, 0, 0.07); }
+html.light .tag-jpop { background: rgba(47, 158, 138, 0.12); color: #17705f; }
+html.light .tag-zh { background: rgba(201, 95, 123, 0.12); color: #b34e68; }
+html.light .tag-anime { background: rgba(122, 102, 220, 0.12); color: #5c49b8; }
+html.light .tag-vocaloid { background: rgba(70, 140, 200, 0.14); color: #2c6da4; }
+html.light .tool-btn.active { color: #fff; }
+html.light .toast { color: #fff; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18); }
+html.light .back-top { background: rgba(255, 253, 248, 0.8); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); }
+html.light body.has-bg-image .table-wrap,
+html.light body.has-bg-image .filter-select,
+html.light body.has-bg-image #searchInput { background: var(--card); }
+
 /* ========== 平板/窄屏：表格横向滚动 + 关闭表头吸顶 ========== */
 /* 注意：table-wrap 一旦成为滚动容器（overflow-x:auto），thead 的 sticky
    会以它为基准——容器顶部就是表格顶部，表头在初始状态就被 top 偏移
@@ -455,34 +580,8 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
      疑似影响底部提示显示，且长列表回顶部不便，由悬浮按钮补足） */
   .sticky-area { display: contents; }
 
-  /* 回到顶部悬浮按钮：半透明圆形 + 毛玻璃，滚动超过约一屏出现 */
-  .back-top {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    right: 12px;
-    bottom: 26px;
-    width: 42px;
-    height: 42px;
-    padding: 0;
-    border-radius: 50%;
-    border: 1px solid rgba(124, 227, 207, 0.35);
-    background: rgba(21, 24, 35, 0.5);
-    -webkit-backdrop-filter: blur(8px);
-    backdrop-filter: blur(8px);
-    color: var(--primary);
-    font-size: 19px;
-    font-family: inherit;
-    line-height: 1;
-    cursor: pointer;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.25s, transform 0.15s;
-    z-index: 70;
-  }
-  .back-top.show { opacity: 0.9; pointer-events: auto; }
-  .back-top:active { transform: scale(0.94); }
+  /* 头部标题避开右上角悬浮的主题开关 */
+  .header { padding-right: 44px; }
 
   /* 表格：基础四列（# / 歌名 / 歌手 / 类型）正好铺满屏宽，
      「付费礼物」列额外多出 ~70px，横向拖动才能看到 */

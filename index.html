@@ -6,6 +6,8 @@
   <title>芙芙的歌单</title>
   <link rel="icon" href="favicon.ico?v=4" type="image/x-icon">
   <link rel="stylesheet" href="style.css">
+  <script>/* 主题预设：进页面立刻应用上次选择的模式，避免闪一下深色 */
+    try{if(localStorage.getItem("theme")==="light")document.documentElement.classList.add("light")}catch(e){}</script>
 </head>
 <body>
   <!-- 背景图片层（由 app.js 依据 site.json 控制） -->
@@ -91,8 +93,20 @@
     <p class="empty-tip" id="emptyTip" hidden>没有找到匹配的歌曲 🎶</p>
   </div>
 
-  <!-- 回到顶部悬浮按钮（移动端，CSS 中控制仅小屏显示） -->
-  <button id="backTop" class="back-top" type="button" aria-label="回到顶部">↑</button>
+  <!-- 主题开关：拉绳灯开关造型（绳+环+坠点，点击切换深浅色） -->
+  <button id="themeToggle" class="theme-toggle" type="button" aria-label="切换深浅色模式">
+    <span class="tt-cord" aria-hidden="true"></span>
+    <span class="tt-ring" aria-hidden="true"></span>
+    <span class="tt-bead" aria-hidden="true"></span>
+  </button>
+
+  <!-- 回到顶部悬浮按钮：滚动后出现，桌面/移动端均显示 -->
+  <button id="backTop" class="back-top" type="button" aria-label="回到顶部">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+         stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M12 19V5"/><path d="M5 12l7-7 7 7"/>
+    </svg>
+  </button>
 
   <!-- 复制成功提示 -->
   <div class="toast" id="toast" role="status"></div>
