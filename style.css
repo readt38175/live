@@ -30,6 +30,9 @@ body {
 
 /* 深色：近黑底 + 三处柔和色晕 + 细腻噪点（!important 覆盖 JS 写入的内联底色） */
 body {
+  /* 优先取系统里更圆润现代的中文字体（鸿蒙/小米/苹方），回退雅黑 */
+  font-family: -apple-system, "HarmonyOS Sans SC", "MiSans", "PingFang SC",
+    "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
   background:
     radial-gradient(900px 600px at 12% -6%, rgba(124, 227, 207, 0.07), transparent 62%),
     radial-gradient(820px 560px at 92% -2%, rgba(242, 160, 180, 0.06), transparent 62%),
@@ -377,6 +380,7 @@ body.has-bg-image .bg-overlay { display: block; }
   min-width: 860px;           /* 低于此宽度出现横向滚动条 */
   border-collapse: collapse;
   font-size: 14px;
+  line-height: 1.55;
 }
 .song-table thead th {
   position: sticky;
@@ -401,7 +405,7 @@ body.has-bg-image .bg-overlay { display: block; }
   background: rgba(124, 227, 207, 0.05);
 }
 .song-table td {
-  padding: 10px 12px;
+  padding: 13px 12px;         /* 行高稍高一点，阅读更松弛 */
   vertical-align: middle;
   color: var(--text);
 }
@@ -412,6 +416,39 @@ body.has-bg-image .bg-overlay { display: block; }
 @keyframes rowFlash {
   0%, 100% { background: transparent; }
   50% { background: rgba(242, 160, 180, 0.22); }
+}
+
+/* 悬停：左侧浮现竖色条（仿参考图的 04 行效果） */
+@media (hover: hover) {
+  .song-table tbody tr:hover td:first-child {
+    box-shadow: inset 3px 0 0 var(--accent);
+  }
+}
+
+/* 语言描边小胶囊 */
+.lang-tag {
+  display: inline-block;
+  padding: 1px 10px;
+  font-size: 12px;
+  line-height: 1.7;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-light);
+  white-space: nowrap;
+}
+
+/* 悬停浮现的「复制」小图标（行尾） */
+.copy-hint {
+  display: inline-block;
+  margin-left: 10px;
+  color: var(--text-light);
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s;
+  vertical-align: middle;
+}
+.copy-hint svg { width: 15px; height: 15px; display: block; }
+@media (hover: hover) {
+  .song-table tbody tr:hover .copy-hint { opacity: 0.85; color: var(--primary); }
 }
 
 /* 有图片背景时表格略带透明感 */

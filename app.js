@@ -350,10 +350,15 @@ function render() {
     }
     tr.appendChild(tdType);
 
-    // 语言
+    // 语言（描边小胶囊样式）
     const tdLang = document.createElement("td");
     tdLang.className = "td-lang";
-    tdLang.textContent = song.language || "";
+    if (song.language) {
+      const langSpan = document.createElement("span");
+      langSpan.className = "lang-tag";
+      langSpan.textContent = song.language;
+      tdLang.appendChild(langSpan);
+    }
     tr.appendChild(tdLang);
 
     // 付费礼物（合并原「是否付费」：有礼物直接显示内容/金额；仅标记付费无礼物则显示「是」）
@@ -379,7 +384,7 @@ function render() {
     tdNote.textContent = song.note || "";
     tr.appendChild(tdNote);
 
-    // 收听链接
+    // 收听链接 + 悬停浮现的「复制」小图标
     const tdLink = document.createElement("td");
     tdLink.className = "td-link";
     if (song.link) {
@@ -392,6 +397,15 @@ function render() {
       a.addEventListener("click", e => e.stopPropagation()); // 点链接不触发复制
       tdLink.appendChild(a);
     }
+    const copyHint = document.createElement("span");
+    copyHint.className = "copy-hint";
+    copyHint.title = "点击行复制歌名";
+    copyHint.innerHTML =
+      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"' +
+      ' stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+      '<rect x="9" y="9" width="13" height="13" rx="2.5"/>' +
+      '<path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    tdLink.appendChild(copyHint);
     tr.appendChild(tdLink);
 
     bodyEl.appendChild(tr);
