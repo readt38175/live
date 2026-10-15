@@ -24,6 +24,29 @@ body {
   overflow-x: hidden;
 }
 
+/* ========== 背景（纯 CSS 渐变 + 噪点质感，深浅色均不再使用图案图片） ========== */
+/* 图片层/蒙层/光晕层统一停用 */
+.bg-image, .bg-overlay, .glow { display: none !important; }
+
+/* 深色：近黑底 + 三处柔和色晕 + 细腻噪点（!important 覆盖 JS 写入的内联底色） */
+body {
+  background:
+    radial-gradient(900px 600px at 12% -6%, rgba(124, 227, 207, 0.07), transparent 62%),
+    radial-gradient(820px 560px at 92% -2%, rgba(242, 160, 180, 0.06), transparent 62%),
+    radial-gradient(1300px 900px at 50% 112%, rgba(96, 120, 180, 0.07), transparent 66%),
+    #0b0d12 !important;
+}
+/* 噪点质感层（内联 SVG feTurbulence，无需外部文件） */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+  opacity: 0.05;
+}
+
 /* ========== 复制成功提示（toast） ========== */
 .toast {
   position: fixed;
@@ -481,11 +504,14 @@ html.light {
   --text-light: #8b8f97;
   --border: #e5ddcd;
 }
-/* 浅色不要背景图案：背景图/蒙层/氛围光晕全部隐藏 */
-html.light body { background: var(--bg) !important; } /* !important 盖过 site.json 写入的内联底色 */
-html.light body.has-bg-image .bg-image,
-html.light body.has-bg-image .bg-overlay,
-html.light .glow { display: none; }
+/* 浅色不要背景图案：图片层/光晕已全局停用，这里补上浅色底 + 极淡噪点 */
+html.light body {
+  background:
+    radial-gradient(900px 600px at 12% -6%, rgba(47, 158, 138, 0.07), transparent 62%),
+    radial-gradient(820px 560px at 92% -2%, rgba(201, 95, 123, 0.05), transparent 62%),
+    var(--bg) !important;
+}
+html.light body::before { opacity: 0.035; }
 /* 组件逐一适配 */
 html.light .header h1 {
   background: linear-gradient(120deg, #17705f, #4a4f57 55%, #b34e68);
@@ -565,12 +591,11 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   .search-icon { left: 12px; font-size: 13px; }
   .toolbar { margin-bottom: 10px; }
 
-  /* 随机一首/复制提示：垂直居中显示（底部/顶部方案均被环境盖住，
-     改屏幕正中确保可见；出现时从中心上方 16px 滑入） */
+  /* 随机一首/复制提示：中间靠下显示 */
   .toast {
-    top: 50%;
+    top: 62%;
     bottom: auto;
-    transform: translateX(-50%) translateY(calc(-50% - 16px));
+    transform: translateX(-50%) translateY(calc(-50% - 12px));
   }
   .toast.show { transform: translateX(-50%) translateY(-50%); }
   .table-wrap { border-radius: 12px; position: relative; }
@@ -581,9 +606,20 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   .tool-btn { padding: 6px 10px; font-size: 12px; border-radius: 9px; white-space: nowrap; }
   .count-info { font-size: 11px; }
 
-  /* 移动端取消顶部固定：搜索框随页面滚动，不再吸顶（此前固定顶端
-     疑似影响底部提示显示，且长列表回顶部不便，由悬浮按钮补足） */
+  /* 移动端吸顶两行：搜索栏 + 表头（表格不再横拖，两者互不干扰） */
   .sticky-area { display: contents; }
+  .search-box {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+  }
+  .search-box.stuck {
+    background: rgba(11, 13, 18, 0.88);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+    border: 1px solid var(--border);
+  }
 
   /* 头部标题避开右上角悬浮的主题开关 */
   .header { padding-right: 44px; }
@@ -605,19 +641,18 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
     border-spacing: 0;
     transform: translateX(var(--drag-x, 0px));
   }
-  .song-table thead th { padding: 8px; font-size: 12px; }
-  .song-table td { padding: 7px 8px; overflow: hidden; }
+  .song-table thead th { padding: 8px 6px; font-size: 12px; }
+  .song-table td { padding: 7px 6px; overflow: hidden; }
   /* separate 模式下行边框需落在 td 上 */
   .song-table tbody td { border-bottom: 1px solid rgba(38, 43, 58, 0.55); }
   .song-table tbody tr:last-child td { border-bottom: none; }
   .th-note, .td-note, .th-lang, .td-lang, .th-link, .td-link,
   .th-gift, .td-gift { display: none; }
-  /* 固定列宽：# / 类型 定宽，歌名占剩余空间。
-     序号 42px 完整容纳三位数（fixed 布局列宽含 padding）；
-     类型 122px 完整放下最长标签「动画/游戏插曲」「VOCALOID/ボカロ」 */
-  .song-table th:nth-child(1) { width: 42px; }
-  .song-table th:nth-child(4) { width: 122px; }
-  .song-table th:nth-child(3) { width: 25%; }
+  /* 列宽：# 38px（三位数够用）/ 类型 100px（最长标签放得下）/
+     歌手 24%，其余给歌名；配合 6px 横向内边距，列间距更均衡 */
+  .song-table th:nth-child(1) { width: 38px; }
+  .song-table th:nth-child(4) { width: 100px; }
+  .song-table th:nth-child(3) { width: 24%; }
 
   /* 付费礼物改歌名后徽章：金色圆角描边（参考 SC ¥100 样式） */
   .gift-inline {
@@ -646,7 +681,15 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   .back-top svg { width: 19px; height: 19px; }
   .song-table th:nth-child(3) { width: 25%; }
 
-  /* 移动端不再固定表头：随表格一起滚动（≤900px 规则已设 static） */
+  /* 表头（歌名/歌手/类型）吸顶：紧贴吸顶搜索栏下方，top 用 JS 量的
+     --sticky-h，随搜索栏高度自适应 */
+  .song-table thead th {
+    position: sticky;
+    top: var(--sticky-h, 0px);
+    z-index: 45;
+    background: #1a1e2c;
+    border-bottom: 1px solid var(--border);
+  }
 
   /* 长歌名/长歌手名允许换行，避免撑破固定布局 */
   .td-title, .td-artist { overflow-wrap: anywhere; white-space: normal; }
