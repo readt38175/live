@@ -152,8 +152,20 @@ html.light .tt-ring { background: var(--accent); }
 .back-top { width: 54px; height: 54px; }
 .back-top svg { width: 24px; height: 24px; }
 
-/* 礼物徽章：仅移动端歌名后显示（桌面端用「付费礼物」列） */
-.gift-inline { display: none; }
+/* 付费礼物徽章：金框圆角（独立列已取消，桌面/移动端统一在歌名后展示） */
+.gift-inline {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0.5px 8px;
+  font-size: 11px;
+  line-height: 1.7;
+  border-radius: 7px;
+  border: 1.5px solid #e8b339;
+  color: #8a6100;
+  background: #fff;
+  vertical-align: middle;
+  white-space: nowrap;
+}
 
 /* ========== 背景图位置自适应（星空等图片背景） ========== */
 /* 桌面端：居中铺满 */
@@ -262,7 +274,33 @@ body.has-bg-image .bg-overlay { display: block; }
   border: 1px solid var(--border);
 }
 
-/* ========== 筛选栏（类型 / 语种 / 付费 下拉，仿参考图） ========== */
+/* ========== 类型胶囊行（吸顶，替代原「类型」下拉） ========== */
+.type-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.chip {
+  padding: 5px 15px;
+  font-size: 13px;
+  line-height: 1.6;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-light);
+  cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
+}
+.chip:hover { border-color: var(--primary); color: var(--primary); }
+.chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* ========== 筛选栏（语种 / 歌手 下拉） ========== */
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
@@ -273,6 +311,7 @@ body.has-bg-image .bg-overlay { display: block; }
 .filter-select {
   flex: 1;
   min-width: 150px;
+  max-width: 380px;  /* 只剩两个下拉，限制宽度避免拉得过长 */
   display: flex;
   align-items: center;
   gap: 10px;
@@ -384,7 +423,7 @@ body.has-bg-image .bg-overlay { display: block; }
 }
 .song-table thead th {
   position: sticky;
-  top: var(--sticky-h, 0px);  /* 跟随吸顶筛选区高度，避免表头被遮住 */
+  top: var(--sticky-h2, var(--sticky-h, 0px));  /* 吸顶区（含类型胶囊行）正下方 */
   background: #1a1e2c;
   color: var(--text-light);
   font-size: 13px;
@@ -570,6 +609,7 @@ html.light .tag-zh { background: rgba(201, 95, 123, 0.12); color: #b34e68; }
 html.light .tag-anime { background: rgba(122, 102, 220, 0.12); color: #5c49b8; }
 html.light .tag-vocaloid { background: rgba(70, 140, 200, 0.14); color: #2c6da4; }
 html.light .tool-btn.active { color: #fff; }
+html.light .type-chips { background: rgba(247, 242, 232, 0.9); }
 html.light .toast { color: #fff; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18); }
 html.light .back-top { background: rgba(255, 253, 248, 0.8); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); }
 html.light body.has-bg-image .table-wrap,
@@ -693,20 +733,27 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   .song-table th:nth-child(4) { width: 100px; }
   .song-table th:nth-child(3) { width: 24%; }
 
-  /* 付费礼物改歌名后徽章：金色圆角描边（参考 SC ¥100 样式） */
-  .gift-inline {
-    display: inline-block;
-    margin-left: 6px;
-    padding: 0.5px 6px;
-    font-size: 10.5px;
-    line-height: 1.5;
-    border-radius: 7px;
-    border: 1.5px solid #e8b339;
-    color: #8a6100;
-    background: #fff;
-    vertical-align: middle;
-    white-space: nowrap;
+  /* 移动端徽章略小一号 */
+  .gift-inline { margin-left: 6px; padding: 0.5px 6px; font-size: 10.5px; }
+
+  /* 类型胶囊行：吸顶在搜索栏正下方，横向滚动单行排列 */
+  .type-chips {
+    position: sticky;
+    top: var(--sticky-h, 0px);
+    z-index: 55;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 7px;
+    margin: 0 -10px 8px;   /* 抵消容器左右内边距，铺满屏宽 */
+    padding: 6px 10px;
+    background: rgba(11, 13, 18, 0.88);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
   }
+  .type-chips::-webkit-scrollbar { display: none; }
+  .chip { flex: 0 0 auto; padding: 3px 13px; font-size: 12.5px; }
 
   /* 回到顶部：移动端小一号、半透明悬浮右下角（随视口固定，
      不再随表格横向位置变化） */
@@ -720,11 +767,10 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   .back-top svg { width: 19px; height: 19px; }
   .song-table th:nth-child(3) { width: 25%; }
 
-  /* 表头（歌名/歌手/类型）吸顶：紧贴吸顶搜索栏下方，top 用 JS 量的
-     --sticky-h，随搜索栏高度自适应 */
+  /* 表头（歌名/歌手/类型）吸顶：紧贴「搜索栏 + 类型胶囊行」下方 */
   .song-table thead th {
     position: sticky;
-    top: var(--sticky-h, 0px);
+    top: var(--sticky-h2, 0px);
     z-index: 45;
     background: #1a1e2c;
     border-bottom: 1px solid var(--border);

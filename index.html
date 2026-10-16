@@ -30,7 +30,7 @@
 
     <!-- 吸顶区：筛选 + 搜索 + 工具栏（桌面端整体吸顶；移动端仅搜索框吸顶） -->
     <div class="sticky-area" id="stickyArea">
-      <!-- 筛选栏：类型 / 语种 / 付费（下拉） -->
+      <!-- 筛选栏：类型 / 语种 / 歌手（下拉） -->
       <div class="filter-bar">
       <label class="filter-select">
         <span class="fs-label">类型</span>
@@ -44,14 +44,6 @@
         <span class="fs-label">歌手</span>
         <select id="artistFilter" aria-label="按歌手筛选"></select>
       </label>
-      <label class="filter-select">
-        <span class="fs-label">付费</span>
-        <select id="paidFilter" aria-label="按付费筛选">
-          <option value="全部">全部</option>
-          <option value="是">是</option>
-          <option value="否">否</option>
-        </select>
-      </label>
     </div>
 
     <!-- 搜索框 -->
@@ -59,6 +51,9 @@
       <span class="search-icon">🔍</span>
       <input type="text" id="searchInput" placeholder="搜索歌名、中文译名或歌手…" aria-label="搜索">
     </div>
+
+    <!-- 类型胶囊行：展开的类型选项，吸顶便于下滑时选择 -->
+    <div class="type-chips" id="typeChips" role="group" aria-label="按类型筛选"></div>
 
     <!-- 工具栏：排序 / 随机一首 -->
     <div class="toolbar">
@@ -81,7 +76,6 @@
             <th>歌手</th>
             <th>类型</th>
             <th class="th-lang">语言</th>
-            <th class="th-gift">付费礼物</th>
             <th class="th-note">备注</th>
             <th class="th-link"></th>
           </tr>

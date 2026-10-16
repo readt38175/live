@@ -1,19 +1,18 @@
 /* ================= 全局状态 ================= */
 let songs = [];              // 全部歌曲数据（来自 songs.json）
 let site = null;             // 站点配置（来自 site.json，可能不存在）
-let currentType = "全部";     // 当前类型筛选
+let currentType = "全部";     // 当前类型筛选（由类型胶囊行控制）
 let currentLang = "全部";     // 当前语种筛选
 let currentArtist = "全部";   // 当前歌手筛选
-let currentPaid = "全部";     // 当前付费筛选
 let sortMode = null;         // 排序模式：null=原顺序 | "artist"=按歌手 | "title"=按歌名
 let toastTimer = null;       // 复制提示计时器
 
 const bodyEl = document.getElementById("songBody");
 const searchEl = document.getElementById("searchInput");
 const typeEl = document.getElementById("typeFilter");
+const chipsEl = document.getElementById("typeChips");
 const langEl = document.getElementById("langFilter");
 const artistEl = document.getElementById("artistFilter");
-const paidEl = document.getElementById("paidFilter");
 const emptyEl = document.getElementById("emptyTip");
 const countEl = document.getElementById("countInfo");
 const sortBtn = document.getElementById("sortArtistBtn");
@@ -79,10 +78,14 @@ function applySiteConfig() {
 /* ================= 事件 ================= */
 function bindEvents() {
   searchEl.addEventListener("input", render);
-  typeEl.addEventListener("change", () => { currentType = typeEl.value; render(); });
+  // 类型筛选：下拉与胶囊行双向同步
+  typeEl.addEventListener("change", () => setType(typeEl.value));
+  chipsEl.addEventListener("click", e => {
+    const btn = e.target.closest(".chip");
+    if (btn) setType(btn.dataset.type);
+  });
   langEl.addEventListener("change", () => { currentLang = langEl.value; render(); });
   artistEl.addEventListener("change", () => { currentArtist = artistEl.value; render(); });
-  paidEl.addEventListener("change", () => { currentPaid = paidEl.value; render(); });
 
   sortBtn.addEventListener("click", () => setSortMode(sortMode === "artist" ? null : "artist"));
   sortTitleBtn.addEventListener("click", () => setSortMode(sortMode === "title" ? null : "title"));
@@ -124,10 +127,14 @@ function currentStickyEl() {
   return mobileMq.matches ? searchBox : stickyArea;
 }
 
-// 量取吸顶区高度 -> 写入 CSS 变量，供表头 sticky top 使用，避免表头被遮住
+// 量取吸顶高度 -> 写入 CSS 变量，供吸顶元素使用，避免互相遮挡：
+//   --sticky-h  = 搜索栏（移动端）/ 整个吸顶区（桌面端）
+//   --sticky-h2 = --sticky-h + 类型胶囊行高（移动端表头用；桌面端两者相等）
 function updateStickyHeight() {
-  const h = currentStickyEl().offsetHeight;
-  document.documentElement.style.setProperty("--sticky-h", h + "px");
+  const base = currentStickyEl().offsetHeight;
+  const chipsH = mobileMq.matches && chipsEl ? chipsEl.offsetHeight : 0;
+  document.documentElement.style.setProperty("--sticky-h", base + "px");
+  document.documentElement.style.setProperty("--sticky-h2", (base + chipsH) + "px");
 }
 
 function setupSticky() {
@@ -262,6 +269,28 @@ function buildFilters() {
   fillSelect(typeEl, types);
   fillSelect(langEl, langs);
   fillSelect(artistEl, artists);
+  buildTypeChips(types);
+}
+
+/* 类型统一入口：同步下拉选中值与胶囊高亮，再重渲染 */
+function setType(t) {
+  currentType = t;
+  typeEl.value = t;
+  chipsEl.querySelectorAll(".chip").forEach(c => c.classList.toggle("active", c.dataset.type === t));
+  render();
+}
+
+/* 类型胶囊行：全部 + 各类型（样式仿参考图的圆角胶囊） */
+function buildTypeChips(types) {
+  chipsEl.innerHTML = "";
+  ["全部", ...types].forEach(t => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "chip" + (t === currentType ? " active" : "");
+    btn.dataset.type = t;
+    btn.textContent = t;
+    chipsEl.appendChild(btn);
+  });
 }
 
 /* ================= 核心渲染 ================= */
@@ -273,12 +302,9 @@ function render() {
     const matchType = currentType === "全部" || s.type === currentType;
     const matchLang = currentLang === "全部" || s.language === currentLang;
     const matchArtist = currentArtist === "全部" || s.artist === currentArtist;
-    const matchPaid = currentPaid === "全部"
-      || (s.paid || "否") === currentPaid
-      || (currentPaid === "是" && (s.gift || "").trim()); // 有礼物也算付费
     const hay = [s.title, s.titleZh, s.artist, s.note]
       .map(x => (x || "").toLowerCase()).join(" ");
-    return matchType && matchLang && matchArtist && matchPaid && (!keyword || hay.includes(keyword));
+    return matchType && matchLang && matchArtist && (!keyword || hay.includes(keyword));
   });
 
   // 2. 排序
@@ -361,22 +387,7 @@ function render() {
     }
     tr.appendChild(tdLang);
 
-    // 付费礼物（合并原「是否付费」：有礼物直接显示内容/金额；仅标记付费无礼物则显示「是」）
-    const tdGift = document.createElement("td");
-    tdGift.className = "td-gift";
-    const gift = (song.gift || "").trim();
-    if (gift) {
-      const g = document.createElement("span");
-      g.className = "gift-val";
-      g.textContent = gift;
-      tdGift.appendChild(g);
-    } else if ((song.paid || "否") === "是") {
-      const b = document.createElement("span");
-      b.className = "paid-yes";
-      b.textContent = "是";
-      tdGift.appendChild(b);
-    }
-    tr.appendChild(tdGift);
+    // 付费礼物不再单独成列：歌名后的金色徽章（gift-inline）已携带该信息
 
     // 备注（粉色小字，对应 Excel「备注」列）
     const tdNote = document.createElement("td");
