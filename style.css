@@ -662,15 +662,15 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   .fs-label { font-size: 12.5px; padding-right: 7px; }
   .filter-select select { padding: 7px 2px; font-size: 12.5px; }
 
-  /* 搜索框与工具栏间距收紧 */
-  .search-box { margin-bottom: 8px; }
+  /* 搜索框：通栏铺满（抵消容器内边距），与下方吸顶层无缝衔接 */
+  .search-box { margin: 0 -10px; padding: 6px 12px; }
   #searchInput { padding: 10px 12px 10px 36px; font-size: 13.5px; border-radius: 12px; }
   .search-icon { left: 12px; font-size: 13px; }
   .toolbar { margin-bottom: 10px; }
 
   /* 随机一首/复制提示：距底部 48px（沿用基类的上滑入场动画） */
   .toast { top: auto; bottom: 48px; }
-  .table-wrap { border-radius: 12px; position: relative; }
+  .table-wrap { border-radius: 12px; position: relative; margin-top: 10px; }
 
   /* 工具栏：缩小按钮字号与内边距，三个按钮尽量排成一行 */
   .toolbar { flex-wrap: wrap; gap: 6px; }
@@ -685,12 +685,12 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
     top: 0;
     z-index: 60;
   }
+  /* 吸附后：通栏毛玻璃底、无描边直角，仅保留轻投影，观感是一条干净的横带 */
   .search-box.stuck {
     background: rgba(11, 13, 18, 0.88);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
-    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
-    border: 1px solid var(--border);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
   }
 
   /* 头部标题避开右上角悬浮的主题开关 */
@@ -736,7 +736,8 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   /* 移动端徽章略小一号 */
   .gift-inline { margin-left: 6px; padding: 0.5px 6px; font-size: 10.5px; }
 
-  /* 类型胶囊行：吸顶在搜索栏正下方，横向滚动单行排列 */
+  /* 类型胶囊行：吸顶在搜索栏正下方（无外边距，与其无缝衔接），
+     横向滚动单行排列 */
   .type-chips {
     position: sticky;
     top: var(--sticky-h, 0px);
@@ -746,7 +747,7 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     gap: 7px;
-    margin: 0 -10px 8px;   /* 抵消容器左右内边距，铺满屏宽 */
+    margin: 0 -10px;   /* 抵消容器左右内边距，铺满屏宽；上下不留缝防漏字 */
     padding: 6px 10px;
     background: rgba(11, 13, 18, 0.88);
     -webkit-backdrop-filter: blur(12px);
