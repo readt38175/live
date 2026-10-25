@@ -1,13 +1,13 @@
-/* ========== 基础（深色主题：黑底 + 薄荷绿主色 + 粉色点缀） ========== */
+/* 基础 */
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --primary: #7ce3cf;              /* 薄荷绿主色（取自头像发色） */
+  --primary: #7ce3cf;              /* 主色 */
   --primary-dim: rgba(124, 227, 207, 0.14);
-  --accent: #f2a0b4;               /* 粉色点缀（取自头像发饰） */
+  --accent: #f2a0b4;               /* 点缀色 */
   --accent-dim: rgba(242, 160, 180, 0.16);
-  --bg: #0b0d12;                   /* 近黑背景 */
-  --card: #151823;                 /* 深色卡片 */
+  --bg: #0b0d12;
+  --card: #151823;
   --card-hover: #1a1e2c;
   --text: #e8eaf0;
   --text-light: #9aa1b2;
@@ -24,13 +24,10 @@ body {
   overflow-x: hidden;
 }
 
-/* ========== 背景（纯 CSS 渐变 + 噪点质感，深浅色均不再使用图案图片） ========== */
-/* 图片层/蒙层/光晕层统一停用 */
+/* 背景 */
 .bg-image, .bg-overlay, .glow { display: none !important; }
 
-/* 深色：近黑底 + 三处柔和色晕 + 细腻噪点（!important 覆盖 JS 写入的内联底色） */
 body {
-  /* 优先取系统里更圆润现代的中文字体（鸿蒙/小米/苹方），回退雅黑 */
   font-family: -apple-system, "HarmonyOS Sans SC", "MiSans", "PingFang SC",
     "Hiragino Sans GB", "Microsoft YaHei", "Segoe UI", sans-serif;
   background:
@@ -39,7 +36,7 @@ body {
     radial-gradient(1300px 900px at 50% 112%, rgba(96, 120, 180, 0.07), transparent 66%),
     #0b0d12 !important;
 }
-/* 噪点质感层（内联 SVG feTurbulence，无需外部文件） */
+/* 噪点层 */
 body::before {
   content: "";
   position: fixed;
@@ -50,7 +47,7 @@ body::before {
   opacity: 0.05;
 }
 
-/* ========== 复制成功提示（toast） ========== */
+/* toast */
 .toast {
   position: fixed;
   left: 50%;
@@ -70,7 +67,7 @@ body::before {
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-/* ========== 主题开关：拉绳灯开关（右上角，深/浅色切换） ========== */
+/* 主题开关 */
 .theme-toggle {
   display: flex;
   flex-direction: column;
@@ -82,17 +79,15 @@ body::before {
   background: none;
   border: none;
   cursor: pointer;
-  transform-origin: top center;  /* 摆动动画以绳顶为轴 */
+  transform-origin: top center;
   -webkit-tap-highlight-color: transparent;
   z-index: 90;
 }
-/* 拉绳：垂直虚线（加粗加长更醒目） */
 .tt-cord {
   width: 0;
   height: 96px;
   border-left: 3px dashed rgba(242, 160, 180, 0.75);
 }
-/* 末端圆环：深色模式空心，浅色模式实心（兼作当前模式指示） */
 .tt-ring {
   width: 18px;
   height: 18px;
@@ -102,7 +97,6 @@ body::before {
   background: transparent;
   transition: background 0.2s;
 }
-/* 环下小坠点 */
 .tt-bead {
   width: 6px;
   height: 6px;
@@ -112,7 +106,7 @@ body::before {
 }
 html.light .tt-cord { border-left-color: rgba(201, 95, 123, 0.6); }
 html.light .tt-ring { background: var(--accent); }
-/* 点击后拉绳摆动一下 */
+/* 摆动 */
 .theme-toggle.swing { animation: tt-swing 0.7s ease-in-out; }
 @keyframes tt-swing {
   0%   { transform: rotate(0); }
@@ -122,7 +116,7 @@ html.light .tt-ring { background: var(--accent); }
   100% { transform: rotate(0); }
 }
 
-/* ========== 回到顶部悬浮按钮：滚过约一屏出现，桌面/移动端均显示 ========== */
+/* 回到顶部 */
 .back-top {
   display: flex;
   align-items: center;
@@ -148,11 +142,10 @@ html.light .tt-ring { background: var(--accent); }
 .back-top.show { opacity: 0.95; pointer-events: auto; }
 .back-top:hover { transform: translateY(-2px); }
 .back-top:active { transform: scale(0.94); }
-/* 桌面端加大更明显 */
 .back-top { width: 54px; height: 54px; }
 .back-top svg { width: 24px; height: 24px; }
 
-/* 付费礼物徽章：金框圆角（独立列已取消，桌面/移动端统一在歌名后展示） */
+/* 礼物徽章 */
 .gift-inline {
   display: inline-block;
   margin-left: 8px;
@@ -167,8 +160,7 @@ html.light .tt-ring { background: var(--accent); }
   white-space: nowrap;
 }
 
-/* ========== 背景图位置自适应（星空等图片背景） ========== */
-/* 桌面端：居中铺满 */
+/* 背景图自适应 */
 .bg-image {
   position: fixed;
   inset: 0;
@@ -178,11 +170,9 @@ html.light .tt-ring { background: var(--accent); }
   z-index: -3;
   display: none;
 }
-/* 平板端：保持居中，优先展示星空主体 */
 @media (min-width: 481px) and (max-width: 1024px) {
   .bg-image { background-position: center center; }
 }
-/* 移动端：竖屏比例下取中上部，避免星空主体被裁掉 */
 @media (max-width: 480px) {
   .bg-image { background-position: center top; }
 }
@@ -194,11 +184,10 @@ html.light .tt-ring { background: var(--accent); }
   z-index: -2;
   display: none;
 }
-/* 启用图片背景时深色蒙层保证内容可读 */
 body.has-bg-image .bg-image,
 body.has-bg-image .bg-overlay { display: block; }
 
-/* ========== 顶部氛围光晕（纯装饰） ========== */
+/* 光晕 */
 .glow {
   position: fixed;
   border-radius: 50%;
@@ -224,7 +213,7 @@ body.has-bg-image .bg-overlay { display: block; }
   padding: 32px 16px 48px;
 }
 
-/* ========== 头部：居中头像 + 标题 ========== */
+/* 头部 */
 .header {
   display: flex;
   flex-direction: column;
@@ -256,16 +245,15 @@ body.has-bg-image .bg-overlay { display: block; }
 }
 .subtitle { color: var(--text-light); font-size: 14px; }
 
-/* ========== 吸顶筛选区（桌面端：筛选+搜索+工具栏整体吸顶） ========== */
+/* 吸顶筛选区 */
 .sticky-sentinel { height: 1px; }
 .sticky-area {
   position: sticky;
   top: 0;
   z-index: 60;
-  display: flow-root;        /* 包住子元素 margin，吸顶量高准确 */
+  display: flow-root;
   border-radius: 14px;
 }
-/* 贴住顶端后加底色 + 毛玻璃 + 投影，滚动内容从下方穿过时不透字 */
 .sticky-area.stuck {
   background: rgba(11, 13, 18, 0.88);
   -webkit-backdrop-filter: blur(12px);
@@ -274,7 +262,7 @@ body.has-bg-image .bg-overlay { display: block; }
   border: 1px solid var(--border);
 }
 
-/* ========== 类型胶囊行（吸顶，替代原「类型」下拉） ========== */
+/* 类型胶囊行 */
 .type-chips {
   display: flex;
   flex-wrap: wrap;
@@ -300,18 +288,18 @@ body.has-bg-image .bg-overlay { display: block; }
   font-weight: 600;
 }
 
-/* ========== 筛选栏（语种 / 歌手 下拉） ========== */
+/* 筛选栏 */
 .filter-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 14px;
-  padding-right: 52px; /* 右上角悬浮的主题开关让位 */
+  padding-right: 52px;
 }
 .filter-select {
   flex: 1;
   min-width: 150px;
-  max-width: 380px;  /* 只剩两个下拉，限制宽度避免拉得过长 */
+  max-width: 380px;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -351,7 +339,7 @@ body.has-bg-image .bg-overlay { display: block; }
   color: var(--text);
 }
 
-/* ========== 搜索框 ========== */
+/* 搜索框 */
 .search-box { position: relative; margin-bottom: 14px; }
 .search-icon {
   position: absolute;
@@ -377,7 +365,7 @@ body.has-bg-image .bg-overlay { display: block; }
   box-shadow: 0 0 0 3px var(--primary-dim);
 }
 
-/* ========== 工具栏 ========== */
+/* 工具栏 */
 .toolbar {
   display: flex;
   align-items: center;
@@ -406,24 +394,23 @@ body.has-bg-image .bg-overlay { display: block; }
 .tool-btn-accent:active { transform: scale(0.96); }
 .count-info { font-size: 13px; color: var(--text-light); }
 
-/* ========== 歌曲表格 ========== */
+/* 表格 */
 .table-wrap {
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: 14px;
-  /* 桌面端不裁剪溢出：ancestor 有 overflow 时会破坏 thead 的 sticky 表头 */
   overflow-x: visible;
 }
 .song-table {
   width: 100%;
-  min-width: 860px;           /* 低于此宽度出现横向滚动条 */
+  min-width: 860px;
   border-collapse: collapse;
   font-size: 14px;
   line-height: 1.45;
 }
 .song-table thead th {
   position: sticky;
-  top: var(--sticky-h2, var(--sticky-h, 0px));  /* 吸顶区（含类型胶囊行）正下方 */
+  top: var(--sticky-h2, var(--sticky-h, 0px));
   background: #1a1e2c;
   color: var(--text-light);
   font-size: 13px;
@@ -435,7 +422,7 @@ body.has-bg-image .bg-overlay { display: block; }
   z-index: 1;
 }
 .song-table tbody tr {
-  cursor: pointer; /* 点击复制歌名 */
+  cursor: pointer;
   border-bottom: 1px solid rgba(38, 43, 58, 0.55);
   transition: background 0.15s;
 }
@@ -444,7 +431,7 @@ body.has-bg-image .bg-overlay { display: block; }
   background: rgba(124, 227, 207, 0.05);
 }
 .song-table td {
-  padding: 10px 12px;         /* 行高适中，不松不挤 */
+  padding: 10px 12px;
   vertical-align: middle;
   color: var(--text);
 }
@@ -457,14 +444,14 @@ body.has-bg-image .bg-overlay { display: block; }
   50% { background: rgba(242, 160, 180, 0.22); }
 }
 
-/* 悬停：左侧浮现竖色条（仿参考图的 04 行效果） */
+/* 悬停色条 */
 @media (hover: hover) {
   .song-table tbody tr:hover td:first-child {
     box-shadow: inset 3px 0 0 var(--accent);
   }
 }
 
-/* 语言描边小胶囊 */
+/* 语言胶囊 */
 .lang-tag {
   display: inline-block;
   padding: 1px 10px;
@@ -476,7 +463,7 @@ body.has-bg-image .bg-overlay { display: block; }
   white-space: nowrap;
 }
 
-/* 悬停浮现的「复制」小图标（行尾） */
+/* 复制图标 */
 .copy-hint {
   display: inline-block;
   margin-left: 10px;
@@ -490,7 +477,6 @@ body.has-bg-image .bg-overlay { display: block; }
   .song-table tbody tr:hover .copy-hint { opacity: 0.85; color: var(--primary); }
 }
 
-/* 有图片背景时表格略带透明感 */
 body.has-bg-image .table-wrap { background: rgba(21, 24, 35, 0.9); }
 body.has-bg-image .filter-select { background: rgba(21, 24, 35, 0.9); }
 body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
@@ -503,14 +489,13 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
 }
 .td-title { font-weight: 600; min-width: 150px; }
 .title-zh {
-  display: block;            /* 中文译名换行小字，避免列过宽 */
+  display: block;
   font-size: 12px;
   font-weight: 400;
   color: var(--text-light);
   margin-top: 1px;
 }
 .td-artist { color: var(--text-light); min-width: 120px; }
-/* 语言列：固定不换行，避免挤成两行 */
 .td-lang { white-space: nowrap; }
 .song-table th:nth-child(5) { min-width: 56px; }
 
@@ -537,7 +522,6 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
   color: var(--accent);
   font-weight: 600;
 }
-/* 付费礼物内容（含 SC 点歌金额等）：粉色标识付费歌曲 */
 .gift-val {
   display: inline-block;
   padding: 2px 10px;
@@ -559,15 +543,14 @@ body.has-bg-image #searchInput { background: rgba(21, 24, 35, 0.9); }
 }
 .song-link:hover { text-decoration: underline; }
 
-/* ========== 空状态 & 页脚 ========== */
+/* 空状态 & 页脚 */
 .empty-tip { text-align: center; color: var(--text-light); padding: 40px 0; }
 .footer { text-align: center; margin-top: 36px; }
 .admin-link { font-size: 13px; color: var(--text-light); text-decoration: none; }
 .admin-link:hover { color: var(--primary); }
 
-/* ========== 浅色模式（html.light，右上角开关切换，记忆到 localStorage） ========== */
+/* 浅色模式 */
 html.light { color-scheme: light; }
-/* 奶油底 + 白卡片，主色/点缀色加深保证对比度 */
 html.light {
   --primary: #2f9e8a;
   --primary-dim: rgba(47, 158, 138, 0.12);
@@ -580,7 +563,6 @@ html.light {
   --text-light: #8b8f97;
   --border: #e5ddcd;
 }
-/* 浅色不要背景图案：图片层/光晕已全局停用，这里补上浅色底 + 极淡噪点 */
 html.light body {
   background:
     radial-gradient(900px 600px at 12% -6%, rgba(47, 158, 138, 0.07), transparent 62%),
@@ -588,7 +570,6 @@ html.light body {
     var(--bg) !important;
 }
 html.light body::before { opacity: 0.035; }
-/* 组件逐一适配 */
 html.light .header h1 {
   background: linear-gradient(120deg, #17705f, #4a4f57 55%, #b34e68);
   -webkit-background-clip: text;
@@ -616,20 +597,16 @@ html.light body.has-bg-image .table-wrap,
 html.light body.has-bg-image .filter-select,
 html.light body.has-bg-image #searchInput { background: var(--card); }
 
-/* ========== 平板/窄屏：表格横向滚动 + 关闭表头吸顶 ========== */
-/* 注意：table-wrap 一旦成为滚动容器（overflow-x:auto），thead 的 sticky
-   会以它为基准——容器顶部就是表格顶部，表头在初始状态就被 top 偏移
-   向下推、直接盖住第一行数据。因此窄屏下关闭表头吸顶，让它随表格滚动 */
+/* 窄屏 */
 @media (max-width: 900px) {
   .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .song-table thead th { position: static; }
 }
 
-/* ========== 移动端适配 ========== */
+/* 移动端 */
 @media (max-width: 480px) {
   .container { padding: 18px 10px 40px; }
 
-  /* 头部：头像居左、标题居右的横向紧凑布局 */
   .header {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -651,7 +628,6 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   .header h1 { grid-column: 2; font-size: 19px; margin-bottom: 0; }
   .subtitle { grid-column: 2; font-size: 12px; }
 
-  /* 筛选栏：两列网格，压缩整体高度 */
   .filter-bar {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -662,30 +638,26 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   .fs-label { font-size: 12.5px; padding-right: 7px; }
   .filter-select select { padding: 7px 2px; font-size: 12.5px; }
 
-  /* 搜索框：通栏铺满（抵消容器内边距），与下方吸顶层无缝衔接 */
   .search-box { margin: 0 -10px; padding: 6px 12px; }
   #searchInput { padding: 10px 12px 10px 36px; font-size: 13.5px; border-radius: 12px; }
   .search-icon { left: 12px; font-size: 13px; }
   .toolbar { margin-bottom: 10px; }
 
-  /* 随机一首/复制提示：距底部 48px（沿用基类的上滑入场动画） */
   .toast { top: auto; bottom: 48px; }
   .table-wrap { border-radius: 12px; position: relative; margin-top: 10px; }
 
-  /* 工具栏：缩小按钮字号与内边距，三个按钮尽量排成一行 */
   .toolbar { flex-wrap: wrap; gap: 6px; }
   .toolbar-left { flex-wrap: nowrap; gap: 6px; }
   .tool-btn { padding: 6px 10px; font-size: 12px; border-radius: 9px; white-space: nowrap; }
   .count-info { font-size: 11px; }
 
-  /* 移动端吸顶两行：搜索栏 + 表头（表格不再横拖，两者互不干扰） */
+  /* 吸顶 */
   .sticky-area { display: contents; }
   .search-box {
     position: sticky;
     top: 0;
     z-index: 60;
   }
-  /* 吸附后：通栏毛玻璃底、无描边直角，仅保留轻投影，观感是一条干净的横带 */
   .search-box.stuck {
     background: rgba(11, 13, 18, 0.88);
     -webkit-backdrop-filter: blur(12px);
@@ -693,18 +665,13 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
   }
 
-  /* 头部标题避开右上角悬浮的主题开关 */
   .header { padding-right: 44px; }
 
-  /* 移动端拉绳只在页面顶部：改 absolute 随页面滚走，下滑后即消失；
-     绳子尺寸比桌面端小一号，窄屏更清爽 */
   .theme-toggle { position: absolute; }
   .tt-cord { height: 64px; border-left-width: 2.5px; }
   .tt-ring { width: 15px; height: 15px; border-width: 3px; }
   .tt-bead { width: 5px; height: 5px; }
 
-  /* 表格：# / 歌名(含礼物徽章) / 歌手 / 类型 正好铺满屏宽。
-     付费礼物列已取消，表格不再超宽，无需横向拖动 */
   .table-wrap {
     overflow: visible;
     touch-action: pan-y;
@@ -715,29 +682,23 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
     width: 100%;
     table-layout: fixed;
     font-size: 12.5px;
-    /* iOS Safari 下 border-collapse:collapse 会导致 th 的 sticky 失效 */
-    border-collapse: separate;
+    border-collapse: separate; /* iOS sticky 兼容 */
     border-spacing: 0;
     transform: translateX(var(--drag-x, 0px));
   }
   .song-table thead th { padding: 8px 6px; font-size: 12px; }
   .song-table td { padding: 7px 6px; overflow: hidden; }
-  /* separate 模式下行边框需落在 td 上 */
   .song-table tbody td { border-bottom: 1px solid rgba(38, 43, 58, 0.55); }
   .song-table tbody tr:last-child td { border-bottom: none; }
   .th-note, .td-note, .th-lang, .td-lang, .th-link, .td-link,
   .th-gift, .td-gift { display: none; }
-  /* 列宽：# 38px（三位数够用）/ 类型 100px（最长标签放得下）/
-     歌手 24%，其余给歌名；配合 6px 横向内边距，列间距更均衡 */
   .song-table th:nth-child(1) { width: 38px; }
   .song-table th:nth-child(4) { width: 100px; }
   .song-table th:nth-child(3) { width: 24%; }
 
-  /* 移动端徽章略小一号 */
   .gift-inline { margin-left: 6px; padding: 0.5px 6px; font-size: 10.5px; }
 
-  /* 类型胶囊行：吸顶在搜索栏正下方（无外边距，与其无缝衔接），
-     横向滚动单行排列 */
+  /* 胶囊吸顶 */
   .type-chips {
     position: sticky;
     top: var(--sticky-h, 0px);
@@ -747,7 +708,7 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     gap: 7px;
-    margin: 0 -10px;   /* 抵消容器左右内边距，铺满屏宽；上下不留缝防漏字 */
+    margin: 0 -10px;
     padding: 6px 10px;
     background: rgba(11, 13, 18, 0.88);
     -webkit-backdrop-filter: blur(12px);
@@ -756,8 +717,6 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   .type-chips::-webkit-scrollbar { display: none; }
   .chip { flex: 0 0 auto; padding: 3px 13px; font-size: 12.5px; }
 
-  /* 回到顶部：移动端小一号、半透明悬浮右下角（随视口固定，
-     不再随表格横向位置变化） */
   .back-top {
     width: 42px;
     height: 42px;
@@ -768,7 +727,6 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   .back-top svg { width: 19px; height: 19px; }
   .song-table th:nth-child(3) { width: 25%; }
 
-  /* 表头（歌名/歌手/类型）吸顶：紧贴「搜索栏 + 类型胶囊行」下方 */
   .song-table thead th {
     position: sticky;
     top: var(--sticky-h2, 0px);
@@ -777,11 +735,8 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
     border-bottom: 1px solid var(--border);
   }
 
-  /* 长歌名/长歌手名允许换行，避免撑破固定布局 */
   .td-title, .td-artist { overflow-wrap: anywhere; white-space: normal; }
   .td-title { min-width: 0; }
-  /* 移动端类型标签完整显示（列宽已足够），不用省略号；
-     放不下的部分由表格整体横拖查看 */
   .type-tag {
     display: inline-block;
     vertical-align: middle;

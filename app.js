@@ -1,11 +1,11 @@
-/* ================= 全局状态 ================= */
-let songs = [];              // 全部歌曲数据（来自 songs.json）
-let site = null;             // 站点配置（来自 site.json，可能不存在）
-let currentType = "全部";     // 当前类型筛选（由类型胶囊行控制）
-let currentLang = "全部";     // 当前语种筛选
-let currentArtist = "全部";   // 当前歌手筛选
-let sortMode = null;         // 排序模式：null=原顺序 | "artist"=按歌手 | "title"=按歌名
-let toastTimer = null;       // 复制提示计时器
+/* 全局状态 */
+let songs = [];              // 歌单数据
+let site = null;             // 站点配置
+let currentType = "全部";     // 类型筛选
+let currentLang = "全部";     // 语种筛选
+let currentArtist = "全部";   // 歌手筛选
+let sortMode = null;         // null=原顺序 | artist | title
+let toastTimer = null;       // 提示计时器
 
 const bodyEl = document.getElementById("songBody");
 const searchEl = document.getElementById("searchInput");
@@ -23,13 +23,13 @@ const backTopBtn = document.getElementById("backTop");
 const stickyArea = document.getElementById("stickyArea");
 const stickySentinel = document.getElementById("stickySentinel");
 const searchBox = document.querySelector(".search-box");
-let lastResult = [];         // 最近一次筛选结果（供「随机一首」使用）
+let lastResult = [];         // 最近筛选结果
 
-/* ================= 启动 ================= */
+/* 启动 */
 init();
 
 async function init() {
-  // 并行加载歌单数据 + 站点配置（site.json 缺失时用默认值）
+  // 并行加载数据与配置
   const [songsRes, siteRes] = await Promise.all([
     fetch("songs.json").then(r => r.ok ? r.json() : Promise.reject()),
     fetch("site.json").then(r => r.ok ? r.json() : null).catch(() => null)
@@ -44,9 +44,8 @@ async function init() {
   render();
 }
 
-/* ================= 站点配置：名称 + 背景 ================= */
+/* 站点配置 */
 function applySiteConfig() {
-  // 名称
   if (site.siteName) {
     document.title = site.siteName;
     document.getElementById("siteTitle").textContent = site.siteName;
@@ -55,7 +54,7 @@ function applySiteConfig() {
     document.getElementById("siteSubtitle").textContent = site.subtitle;
   }
 
-  // 背景（深色底 + 星空图：cover + 分端点 background-position 自适应见 style.css）
+  // 背景
   const bg = site.background || {};
   const body = document.body;
   const imgEl = document.getElementById("bgImage");
@@ -66,19 +65,18 @@ function applySiteConfig() {
   } else if (bg.type === "image" && bg.image) {
     imgEl.style.backgroundImage = `url("${bg.image}")`;
     const o = Math.min(Math.max(Number(bg.overlay) || 0, 0), 1);
-    // 蒙层颜色取深色（黑底主题），数值越大文字越清晰
     overlayEl.style.background = `rgba(11,13,18,${o})`;
     body.classList.add("has-bg-image");
-    body.style.background = "#0b0d12"; // 图片加载前的兜底色
+    body.style.background = "#0b0d12"; // 兜底色
   } else {
     body.style.background = "";
   }
 }
 
-/* ================= 事件 ================= */
+/* 事件 */
 function bindEvents() {
   searchEl.addEventListener("input", render);
-  // 类型筛选：下拉与胶囊行双向同步
+  // 类型下拉与胶囊同步
   typeEl.addEventListener("change", () => setType(typeEl.value));
   chipsEl.addEventListener("click", e => {
     const btn = e.target.closest(".chip");
@@ -90,13 +88,12 @@ function bindEvents() {
   sortBtn.addEventListener("click", () => setSortMode(sortMode === "artist" ? null : "artist"));
   sortTitleBtn.addEventListener("click", () => setSortMode(sortMode === "title" ? null : "title"));
 
-  // 随机一首：从当前筛选结果里随机选一首，滚动到该行并高亮 + 复制歌名
+  // 随机一首
   randomBtn.addEventListener("click", () => {
     if (!lastResult.length) { showToast("没有可选的歌曲"); return; }
     const pick = lastResult[Math.floor(Math.random() * lastResult.length)];
     const rows = bodyEl.querySelectorAll(".song-row");
     rows.forEach(r => r.classList.remove("flash"));
-    // lastResult 与渲染顺序一致，按 data-i 定位
     const target = bodyEl.querySelector(`.song-row[data-i="${pick.__i}"]`);
     if (target) {
       target.classList.add("flash");
@@ -104,12 +101,12 @@ function bindEvents() {
       setTimeout(() => target.classList.remove("flash"), 2400);
     }
     showToast(`🎲 随机到《${pick.title || ""}》`);
-    if (pick.title) copyText(pick.title); // 顺手复制，方便去搜歌
+    if (pick.title) copyText(pick.title); // 顺手复制
   });
 
 }
 
-/* ================= 排序模式切换（歌手 / 歌名 二选一，可恢复原顺序） ================= */
+/* 排序切换 */
 function setSortMode(mode) {
   sortMode = mode;
   sortBtn.classList.toggle("active", mode === "artist");
@@ -119,7 +116,7 @@ function setSortMode(mode) {
   render();
 }
 
-/* ================= 吸顶：桌面整体吸顶 / 移动端仅搜索框 ================= */
+/* 吸顶 */
 const mobileMq = window.matchMedia("(max-width: 480px)");
 let stickyObserver = null;
 
@@ -127,9 +124,7 @@ function currentStickyEl() {
   return mobileMq.matches ? searchBox : stickyArea;
 }
 
-// 量取吸顶高度 -> 写入 CSS 变量，供吸顶元素使用，避免互相遮挡：
-//   --sticky-h  = 搜索栏（移动端）/ 整个吸顶区（桌面端）
-//   --sticky-h2 = --sticky-h + 类型胶囊行高（移动端表头用；桌面端两者相等）
+// 吸顶高度写入 CSS 变量
 function updateStickyHeight() {
   const base = currentStickyEl().offsetHeight;
   const chipsH = mobileMq.matches && chipsEl ? chipsEl.offsetHeight : 0;
@@ -139,7 +134,7 @@ function updateStickyHeight() {
 
 function setupSticky() {
   if (stickyObserver) stickyObserver.disconnect();
-  // 哨兵离开视口顶部 = 吸顶区已贴住顶端，加投影/背景
+  // 哨兵判定是否贴顶
   stickyObserver = new IntersectionObserver(entries => {
     entries.forEach(en => {
       const stuck = !en.isIntersecting;
@@ -158,8 +153,7 @@ mobileMq.addEventListener("change", () => {
 });
 window.addEventListener("resize", updateStickyHeight);
 
-/* ================= 回到顶部悬浮按钮 =================
-   滚动超过约一屏出现，点击平滑回顶，桌面/移动端均显示 */
+/* 回到顶部按钮 */
 backTopBtn.addEventListener("click", () => {
   window.scrollTo({ top: 0, behavior: "smooth" });
 });
@@ -167,21 +161,16 @@ window.addEventListener("scroll", () => {
   backTopBtn.classList.toggle("show", window.scrollY > 400);
 }, { passive: true });
 
-/* ================= 深浅色模式开关（右上角拉绳灯开关） =================
-   切换逻辑已内联到 index.html 按钮的 onclick（防止 app.js 缓存过期导致
-   开关失灵），此处不再绑定，避免双重触发 */
+/* 主题开关：切换逻辑内联在 index.html，避免脚本缓存导致失灵 */
 
-/* ================= 移动端横拖查看「付费礼物」列 =================
-   移动端不用 overflow-x:auto 横滚容器（它会让 thead 的 sticky 以容器为
-   基准而失效），改为 JS 手势平移表格本体。表头因此可以原生 sticky 吸顶，
-   由浏览器合成器直接处理，上下滚动时不会再跟着跳动 */
+/* 移动端横拖表格 */
 const tableWrap = document.querySelector(".table-wrap");
 const songTable = document.querySelector(".song-table");
-/* 拖动范围动态测量：表格比容器宽多少就能拖多少（付费礼物列 + 类型/序号列加宽） */
+// 拖动范围动态测量
 function maxDrag() {
   return Math.max(0, Math.round(songTable.getBoundingClientRect().width - tableWrap.clientWidth));
 }
-let dragX = 0;                // 当前左移量：-maxDrag() ~ 0
+let dragX = 0;
 let tStartX = 0, tStartY = 0, startDragX = 0, dragAxis = null;
 
 function applyDragX() {
@@ -201,11 +190,11 @@ tableWrap.addEventListener("touchmove", e => {
   const t = e.touches[0];
   const dx = t.clientX - tStartX, dy = t.clientY - tStartY;
   if (dragAxis === null) {
-    if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;  // 等意图明确再接管
+    if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return; // 等意图明确
     dragAxis = Math.abs(dx) > Math.abs(dy) ? "x" : "y";
-    if (dragAxis === "y") return;                       // 纵向交给页面原生滚动
+    if (dragAxis === "y") return;                     // 纵向交还原生滚动
   }
-  e.preventDefault();                                  // 横向拖动时不滚动页面
+  e.preventDefault();
   dragX = Math.min(0, Math.max(-maxDrag(), startDragX + dx));
   applyDragX();
 }, { passive: false });
@@ -213,13 +202,13 @@ tableWrap.addEventListener("touchmove", e => {
 tableWrap.addEventListener("touchend", () => {
   if (!mobileMq.matches || dragAxis !== "x") return;
   dragAxis = null;
-  songTable.style.transition = "transform 0.18s ease-out";  // 松手吸附
+  songTable.style.transition = "transform 0.18s ease-out"; // 松手吸附
   const M = maxDrag();
   dragX = dragX < -M / 2 ? -M : 0;
   applyDragX();
 });
 
-/* ================= 点击复制歌名 ================= */
+/* 复制 */
 function copyText(text) {
   const done = () => showToast(`已复制《${text}》`);
   if (navigator.clipboard && window.isSecureContext) {
@@ -238,7 +227,7 @@ function fallbackCopy(text, done) {
   try {
     document.execCommand("copy");
     done();
-  } catch (e) { /* 复制失败时静默 */ }
+  } catch (e) { /* 静默 */ }
   ta.remove();
 }
 
@@ -249,7 +238,7 @@ function showToast(msg) {
   toastTimer = setTimeout(() => toastEl.classList.remove("show"), 1600);
 }
 
-/* ================= 生成下拉筛选选项 ================= */
+/* 筛选选项 */
 function fillSelect(sel, values) {
   sel.innerHTML = "";
   ["全部", ...values].forEach(v => {
@@ -272,7 +261,7 @@ function buildFilters() {
   buildTypeChips(types);
 }
 
-/* 类型统一入口：同步下拉选中值与胶囊高亮，再重渲染 */
+// 类型入口：同步下拉与胶囊
 function setType(t) {
   currentType = t;
   typeEl.value = t;
@@ -280,7 +269,7 @@ function setType(t) {
   render();
 }
 
-/* 类型胶囊行：全部 + 各类型（样式仿参考图的圆角胶囊） */
+// 类型胶囊行
 function buildTypeChips(types) {
   chipsEl.innerHTML = "";
   ["全部", ...types].forEach(t => {
@@ -293,11 +282,11 @@ function buildTypeChips(types) {
   });
 }
 
-/* ================= 核心渲染 ================= */
+/* 渲染 */
 function render() {
   const keyword = searchEl.value.trim().toLowerCase();
 
-  // 1. 筛选（关键字匹配：歌名 / 中文译名 / 歌手 / 备注）
+  // 筛选
   let result = songs.filter(s => {
     const matchType = currentType === "全部" || s.type === currentType;
     const matchLang = currentLang === "全部" || s.language === currentLang;
@@ -307,7 +296,7 @@ function render() {
     return matchType && matchLang && matchArtist && (!keyword || hay.includes(keyword));
   });
 
-  // 2. 排序
+  // 排序
   if (sortMode === "artist") {
     result = [...result].sort((a, b) =>
       String(a.artist || "").localeCompare(String(b.artist || ""), "zh-Hans-CN")
@@ -318,7 +307,7 @@ function render() {
     );
   }
 
-  // 3. 渲染表格
+  // 渲染
   countEl.textContent = `共 ${result.length} 首`;
   emptyEl.hidden = result.length > 0;
   lastResult = result;
@@ -327,7 +316,7 @@ function render() {
   result.forEach((song, i) => {
     const tr = document.createElement("tr");
     tr.className = "song-row";
-    tr.dataset.i = i; // 供「随机一首」定位
+    tr.dataset.i = i;
     tr.title = "点击复制歌名";
     tr.addEventListener("click", () => copyText(song.title || ""));
 
@@ -337,11 +326,10 @@ function render() {
     tdIdx.textContent = i + 1;
     tr.appendChild(tdIdx);
 
-    // 歌名（+ 礼物徽章 / 中文译名小字）
+    // 歌名 + 礼物徽章 + 译名
     const tdTitle = document.createElement("td");
     tdTitle.className = "td-title";
     tdTitle.textContent = song.title || "未知歌名";
-    // 礼物徽章：移动端隐藏「付费礼物」列后改在歌名后展示（桌面端隐藏此徽章）
     const giftStr = (song.gift || "").trim();
     if (giftStr) {
       const gi = document.createElement("span");
@@ -363,7 +351,7 @@ function render() {
     tdArtist.textContent = song.artist || "";
     tr.appendChild(tdArtist);
 
-    // 类型（按类型着色的小标签）
+    // 类型
     const tdType = document.createElement("td");
     if (song.type) {
       const tag = document.createElement("span");
@@ -371,12 +359,12 @@ function render() {
                     "动画/游戏插曲": "tag-anime", "VOCALOID/ボカロ": "tag-vocaloid" }[song.type] || "";
       tag.className = "type-tag " + cls;
       tag.textContent = song.type;
-      tag.title = song.type; // 移动端截断时悬停/长按可看全称
+      tag.title = song.type;
       tdType.appendChild(tag);
     }
     tr.appendChild(tdType);
 
-    // 语言（描边小胶囊样式）
+    // 语言
     const tdLang = document.createElement("td");
     tdLang.className = "td-lang";
     if (song.language) {
@@ -387,15 +375,13 @@ function render() {
     }
     tr.appendChild(tdLang);
 
-    // 付费礼物不再单独成列：歌名后的金色徽章（gift-inline）已携带该信息
-
-    // 备注（粉色小字，对应 Excel「备注」列）
+    // 备注
     const tdNote = document.createElement("td");
     tdNote.className = "td-note";
     tdNote.textContent = song.note || "";
     tr.appendChild(tdNote);
 
-    // 收听链接 + 悬停浮现的「复制」小图标
+    // 链接 + 复制图标
     const tdLink = document.createElement("td");
     tdLink.className = "td-link";
     if (song.link) {
@@ -405,7 +391,7 @@ function render() {
       a.target = "_blank";
       a.rel = "noopener";
       a.textContent = "▶ 收听";
-      a.addEventListener("click", e => e.stopPropagation()); // 点链接不触发复制
+      a.addEventListener("click", e => e.stopPropagation());
       tdLink.appendChild(a);
     }
     const copyHint = document.createElement("span");
