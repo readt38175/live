@@ -419,7 +419,7 @@ body.has-bg-image .bg-overlay { display: block; }
   min-width: 860px;           /* 低于此宽度出现横向滚动条 */
   border-collapse: collapse;
   font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.45;
 }
 .song-table thead th {
   position: sticky;
@@ -444,7 +444,7 @@ body.has-bg-image .bg-overlay { display: block; }
   background: rgba(124, 227, 207, 0.05);
 }
 .song-table td {
-  padding: 13px 12px;         /* 行高稍高一点，阅读更松弛 */
+  padding: 10px 12px;         /* 行高适中，不松不挤 */
   vertical-align: middle;
   color: var(--text);
 }
