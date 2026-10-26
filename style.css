@@ -106,14 +106,14 @@ body::before {
 }
 html.light .tt-cord { border-left-color: rgba(201, 95, 123, 0.6); }
 html.light .tt-ring { background: var(--accent); }
-/* 摆动 */
+/* 摆动：上下拉动回弹 */
 .theme-toggle.swing { animation: tt-swing 0.7s ease-in-out; }
 @keyframes tt-swing {
-  0%   { transform: rotate(0); }
-  25%  { transform: rotate(10deg); }
-  55%  { transform: rotate(-7deg); }
-  80%  { transform: rotate(4deg); }
-  100% { transform: rotate(0); }
+  0%   { transform: translateY(0); }
+  30%  { transform: translateY(12px); }
+  60%  { transform: translateY(-6px); }
+  85%  { transform: translateY(3px); }
+  100% { transform: translateY(0); }
 }
 
 /* 回到顶部 */
@@ -593,8 +593,8 @@ html.light .tag-zh { background: rgba(201, 95, 123, 0.12); color: #b34e68; }
 html.light .tag-anime { background: rgba(122, 102, 220, 0.12); color: #5c49b8; }
 html.light .tag-vocaloid { background: rgba(70, 140, 200, 0.14); color: #2c6da4; }
 html.light .tool-btn.active { color: #fff; }
-html.light .type-chips {
-  background: rgba(247, 242, 232, 0.98);
+html.light .type-chips { background: rgba(247, 242, 232, 0.98); }
+html.light .search-box.stuck ~ .type-chips {
   box-shadow: 0 6px 0 -2px rgba(247, 242, 232, 0.98);
 }
 html.light .toast { color: #fff; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18); }
@@ -717,9 +717,12 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
     margin: 0 -10px;
     padding: 6px 10px;
     background: rgba(11, 13, 18, 0.98);
-    box-shadow: 0 6px 0 -2px rgba(11, 13, 18, 0.98);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
+  }
+  /* 吸附后才向下延实条盖缝，页面顶部不遮工具栏 */
+  .search-box.stuck ~ .type-chips {
+    box-shadow: 0 6px 0 -2px rgba(11, 13, 18, 0.98);
   }
   .type-chips::-webkit-scrollbar { display: none; }
   .chip { flex: 0 0 auto; padding: 3px 13px; font-size: 12.5px; }
