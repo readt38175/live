@@ -79,14 +79,16 @@ body::before {
   background: none;
   border: none;
   cursor: pointer;
-  transform-origin: top center;
   -webkit-tap-highlight-color: transparent;
   z-index: 90;
 }
 .tt-cord {
-  width: 0;
-  height: 96px;
-  border-left: 3px dashed rgba(242, 160, 180, 0.75);
+  --cord-h: 96px;
+  width: 3px;
+  height: var(--cord-h);
+  background-image: linear-gradient(to bottom, rgba(242, 160, 180, 0.75) 0 62%, transparent 62%);
+  background-size: 100% 12.5%;
+  background-repeat: repeat-y;
 }
 .tt-ring {
   width: 18px;
@@ -104,16 +106,18 @@ body::before {
   border-radius: 50%;
   background: var(--accent);
 }
-html.light .tt-cord { border-left-color: rgba(201, 95, 123, 0.6); }
+html.light .tt-cord {
+  background-image: linear-gradient(to bottom, rgba(201, 95, 123, 0.6) 0 62%, transparent 62%);
+}
 html.light .tt-ring { background: var(--accent); }
-/* 摆动：上下拉动回弹 */
-.theme-toggle.swing { animation: tt-swing 0.7s ease-in-out; }
+/* 摆动：绳被下拉变长（虚线段随高度拉伸），松手回弹 */
+.theme-toggle.swing .tt-cord { animation: tt-swing 0.7s ease-in-out; }
 @keyframes tt-swing {
-  0%   { transform: translateY(0); }
-  30%  { transform: translateY(12px); }
-  60%  { transform: translateY(-6px); }
-  85%  { transform: translateY(3px); }
-  100% { transform: translateY(0); }
+  0%   { height: var(--cord-h, 96px); }
+  30%  { height: calc(var(--cord-h, 96px) * 1.35); }
+  60%  { height: calc(var(--cord-h, 96px) * 0.92); }
+  85%  { height: calc(var(--cord-h, 96px) * 1.05); }
+  100% { height: var(--cord-h, 96px); }
 }
 
 /* 回到顶部 */
@@ -674,7 +678,7 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   .header { padding-right: 44px; }
 
   .theme-toggle { position: absolute; }
-  .tt-cord { height: 64px; border-left-width: 2.5px; }
+  .tt-cord { --cord-h: 64px; width: 2.5px; }
   .tt-ring { width: 15px; height: 15px; border-width: 3px; }
   .tt-bead { width: 5px; height: 5px; }
 
