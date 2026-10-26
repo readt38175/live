@@ -580,7 +580,10 @@ html.light .sticky-area.stuck {
   background: rgba(247, 242, 232, 0.9);
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12);
 }
-html.light .search-box.stuck { background: rgba(247, 242, 232, 0.9); }
+html.light .search-box.stuck {
+  background: rgba(247, 242, 232, 0.98);
+  box-shadow: 0 6px 0 -2px rgba(247, 242, 232, 0.98);
+}
 html.light .song-table thead th { background: #efe8d8; }
 html.light .song-table tbody tr { border-bottom-color: rgba(0, 0, 0, 0.06); }
 html.light .song-table tbody tr:hover { background: rgba(47, 158, 138, 0.06); }
@@ -590,7 +593,10 @@ html.light .tag-zh { background: rgba(201, 95, 123, 0.12); color: #b34e68; }
 html.light .tag-anime { background: rgba(122, 102, 220, 0.12); color: #5c49b8; }
 html.light .tag-vocaloid { background: rgba(70, 140, 200, 0.14); color: #2c6da4; }
 html.light .tool-btn.active { color: #fff; }
-html.light .type-chips { background: rgba(247, 242, 232, 0.9); }
+html.light .type-chips {
+  background: rgba(247, 242, 232, 0.98);
+  box-shadow: 0 6px 0 -2px rgba(247, 242, 232, 0.98);
+}
 html.light .toast { color: #fff; box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18); }
 html.light .back-top { background: rgba(255, 253, 248, 0.8); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06); }
 html.light body.has-bg-image .table-wrap,
@@ -659,10 +665,10 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
     z-index: 60;
   }
   .search-box.stuck {
-    background: rgba(11, 13, 18, 0.88);
+    background: rgba(11, 13, 18, 0.98);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.16);
+    box-shadow: 0 6px 0 -2px rgba(11, 13, 18, 0.98), 0 4px 12px rgba(0, 0, 0, 0.16);
   }
 
   .header { padding-right: 44px; }
@@ -701,7 +707,7 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
   /* 胶囊吸顶 */
   .type-chips {
     position: sticky;
-    top: var(--sticky-h, 0px);
+    top: calc(var(--sticky-h, 0px) - 1px);
     z-index: 55;
     flex-wrap: nowrap;
     overflow-x: auto;
@@ -710,7 +716,8 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
     gap: 7px;
     margin: 0 -10px;
     padding: 6px 10px;
-    background: rgba(11, 13, 18, 0.88);
+    background: rgba(11, 13, 18, 0.98);
+    box-shadow: 0 6px 0 -2px rgba(11, 13, 18, 0.98);
     -webkit-backdrop-filter: blur(12px);
     backdrop-filter: blur(12px);
   }
@@ -729,7 +736,7 @@ html.light body.has-bg-image #searchInput { background: var(--card); }
 
   .song-table thead th {
     position: sticky;
-    top: var(--sticky-h2, 0px);
+    top: calc(var(--sticky-h2, 0px) - 1px);
     z-index: 45;
     background: #1a1e2c;
     border-bottom: 1px solid var(--border);
